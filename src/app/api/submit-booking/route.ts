@@ -1,9 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+/* import { NextRequest, NextResponse } from "next/server";
 import { sendToGoogleSheets } from "@/lib/googleSheets";
-import { sendCustomerConfirmation, sendBusinessNotification } from "@/lib/email";
-import { BookingData } from "@/lib/services";
+import {
+  sendCustomerConfirmation,
+  sendBusinessNotification,
+} from "@/lib/email";
+import { BookingData } from "@/lib/services"; */
 
-export async function POST(req: NextRequest) {
+/* export async function POST(req: NextRequest) {
   try {
     const data: BookingData = await req.json();
 
@@ -29,4 +32,4 @@ export async function POST(req: NextRequest) {
     console.error("submit-booking error:", err);
     return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
   }
-}
+} */

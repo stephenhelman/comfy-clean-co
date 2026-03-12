@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { BookingData } from "./services";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/* const resend = new Resend(process.env.RESEND_API_KEY);
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://comfycleanco.com";
 const businessEmail = process.env.BUSINESS_EMAIL ?? "comfycleanelpaso@gmail.com";
 const fromEmail = "noreply@comfycleanco.com";
@@ -112,3 +112,4 @@ Notes:        ${data.notes || "(none)"}
     text: body,
   });
 }
+ */
