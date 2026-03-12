@@ -1,26 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500&display=swap');
+
 @import "tailwindcss";
 
+@theme {
+  --color-brand-black:       #0A0A0A;
+  --color-brand-charcoal:    #111111;
+  --color-brand-card:        #1A1A1A;
+  --color-brand-border:      #2A2A2A;
+  --color-brand-blue:        #5BB8E8;
+  --color-brand-blue-light:  #A8D8F0;
+  --color-brand-blue-dark:   #2E86C1;
+  --color-brand-blue-glow:   #5BB8E820;
+  --color-brand-white:       #FFFFFF;
+  --color-brand-silver:      #C0C0C0;
+  --color-brand-gray-light:  #D1D5DB;
+  --color-brand-gray-mid:    #6B7280;
+  --color-brand-gray-dark:   #374151;
+
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-inter:      "Inter", sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --blue:       #5BB8E8;
+  --blue-light: #A8D8F0;
+  --blue-dark:  #2E86C1;
+  --black:      #0A0A0A;
+  --card:       #1A1A1A;
+  --border:     #2A2A2A;
+  --silver:     #C0C0C0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0A0A0A;
+  color: #D1D5DB;
+  font-family: "Inter", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Montserrat", sans-serif;
 }

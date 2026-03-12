@@ -1,0 +1,108 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "about": "About",
+    "book": "Book Now",
+    "contact": "Contact"
+  },
+  "hero": {
+    "headline": "Your Home, Professionally Clean.",
+    "subheadline": "El Paso's trusted residential and commercial cleaning service. We show up, we clean right, you come home to perfect.",
+    "cta_primary": "Book a Free Visit →",
+    "cta_secondary": "View Services"
+  },
+  "whyUs": {
+    "label": "WHY CHOOSE US",
+    "headline": "The Comfy Clean Difference",
+    "card1_title": "Locally Owned",
+    "card1_desc": "Based in Far East El Paso. We know the community because we're part of it.",
+    "card2_title": "Reliable Every Time",
+    "card2_desc": "We show up when we say we will. No surprises, no excuses.",
+    "card3_title": "Residential & Commercial",
+    "card3_desc": "From family homes to offices, we clean it all right the first time.",
+    "card4_title": "Bilingual Service",
+    "card4_desc": "English and Spanish. We communicate clearly, always."
+  },
+  "services": {
+    "label": "WHAT WE OFFER",
+    "headline": "Our Cleaning Services",
+    "residential_title": "Residential Cleaning",
+    "residential_desc": "Deep clean, standard clean, move-in/out cleaning tailored to your home.",
+    "commercial_title": "Commercial Cleaning",
+    "commercial_desc": "Offices, retail, small commercial spaces — cleaned right every time.",
+    "recurring_title": "Recurring Plans",
+    "recurring_desc": "Weekly, bi-weekly, and monthly schedules available for consistent cleanliness."
+  },
+  "serviceArea": {
+    "label": "WHERE WE SERVE",
+    "headline": "Serving Far East El Paso",
+    "desc": "We proudly serve Far East El Paso including Horizon City, Socorro, and surrounding communities."
+  },
+  "cta": {
+    "headline": "Ready for a Cleaner Space?",
+    "desc": "Book your free visit today. No obligation, no pressure — just a clean home.",
+    "button": "Book a Free Visit →"
+  },
+  "book": {
+    "label": "GET STARTED",
+    "headline": "Request Your Free Visit",
+    "name": "Full Name",
+    "phone": "Phone Number",
+    "email": "Email Address",
+    "address": "Service Address",
+    "serviceType": "Service Type",
+    "frequency": "Frequency",
+    "homeSize": "Home Size / Space",
+    "preferredDate": "Preferred Date",
+    "preferredTime": "Preferred Time",
+    "notes": "Special Notes (optional)",
+    "language": "Communication Language",
+    "submit": "Request My Free Visit →",
+    "success": "Thank you! We received your request and will call you within 24 hours to confirm your visit.",
+    "error": "Something went wrong. Please try again or call us directly.",
+    "serviceTypes": {
+      "residential": "Residential Cleaning",
+      "commercial": "Commercial Cleaning"
+    },
+    "frequencies": {
+      "oneTime": "One-time",
+      "weekly": "Weekly",
+      "biweekly": "Bi-weekly",
+      "monthly": "Monthly"
+    },
+    "homeSizes": {
+      "studio": "Studio / Small (under 800 sq ft)",
+      "medium": "Medium (800–1,400 sq ft)",
+      "large": "Large (1,400–2,200 sq ft)",
+      "xlarge": "Extra Large (2,200+ sq ft)",
+      "commercial": "Commercial — please describe below"
+    },
+    "times": {
+      "morning": "Morning (8am–12pm)",
+      "afternoon": "Afternoon (12pm–4pm)",
+      "flexible": "Flexible"
+    }
+  },
+  "about": {
+    "label": "OUR STORY",
+    "headline": "About Comfy Clean Co.",
+    "p1": "Comfy Clean Co. is a locally owned residential and commercial cleaning company rooted in the Far East El Paso community. We started because we believe every home and business deserves a truly clean space — and that the people providing that service should be trustworthy, reliable, and local.",
+    "p2": "We serve busy professional families and businesses throughout Far East El Paso, Horizon City, Socorro, and the surrounding areas. Our team is bilingual, professional, and committed to showing up on time and cleaning right the first time.",
+    "p3": "We're not a franchise. We're your neighbors."
+  },
+  "contact": {
+    "label": "GET IN TOUCH",
+    "headline": "Contact Comfy Clean Co.",
+    "phone_label": "Phone",
+    "email_label": "Email",
+    "location_label": "Service Area",
+    "location_value": "Far East El Paso, Horizon City, Socorro, TX",
+    "cta": "Book a Free Visit →"
+  },
+  "footer": {
+    "tagline": "Clean · Fresh · Reliable",
+    "copyright": "© 2025 Comfy Clean Co. All rights reserved.",
+    "location": "Far East El Paso, TX"
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "services": "Servicios",
+    "about": "Nosotros",
+    "book": "Reservar",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "headline": "Tu Hogar, Limpio Profesionalmente.",
+    "subheadline": "El servicio de limpieza residencial y comercial de confianza en El Paso. Llegamos, limpiamos bien, y tú llegas a casa perfecta.",
+    "cta_primary": "Reserva una Visita Gratis →",
+    "cta_secondary": "Ver Servicios"
+  },
+  "whyUs": {
+    "label": "¿POR QUÉ ELEGIRNOS?",
+    "headline": "La Diferencia de Comfy Clean",
+    "card1_title": "Empresa Local",
+    "card1_desc": "Con sede en el Este de El Paso. Conocemos la comunidad porque somos parte de ella.",
+    "card2_title": "Confiables Siempre",
+    "card2_desc": "Llegamos cuando decimos. Sin sorpresas, sin excusas.",
+    "card3_title": "Residencial y Comercial",
+    "card3_desc": "Desde hogares familiares hasta oficinas, limpiamos todo bien desde la primera vez.",
+    "card4_title": "Servicio Bilingüe",
+    "card4_desc": "Inglés y español. Nos comunicamos claramente, siempre."
+  },
+  "services": {
+    "label": "LO QUE OFRECEMOS",
+    "headline": "Nuestros Servicios de Limpieza",
+    "residential_title": "Limpieza Residencial",
+    "residential_desc": "Limpieza profunda, estándar, mudanza — adaptada a tu hogar.",
+    "commercial_title": "Limpieza Comercial",
+    "commercial_desc": "Oficinas, locales comerciales, espacios pequeños — limpiados correctamente.",
+    "recurring_title": "Planes Recurrentes",
+    "recurring_desc": "Horarios semanales, quincenales y mensuales disponibles."
+  },
+  "serviceArea": {
+    "label": "DÓNDE SERVIMOS",
+    "headline": "Sirviendo el Este de El Paso",
+    "desc": "Servimos con orgullo el Este de El Paso, incluyendo Horizon City, Socorro y comunidades cercanas."
+  },
+  "cta": {
+    "headline": "¿Listo para un Espacio más Limpio?",
+    "desc": "Reserva tu visita gratuita hoy. Sin compromiso, sin presión — solo un hogar limpio.",
+    "button": "Reserva una Visita Gratis →"
+  },
+  "book": {
+    "label": "COMENZAR",
+    "headline": "Solicita tu Visita Gratuita",
+    "name": "Nombre Completo",
+    "phone": "Número de Teléfono",
+    "email": "Correo Electrónico",
+    "address": "Dirección del Servicio",
+    "serviceType": "Tipo de Servicio",
+    "frequency": "Frecuencia",
+    "homeSize": "Tamaño del Hogar / Espacio",
+    "preferredDate": "Fecha Preferida",
+    "preferredTime": "Hora Preferida",
+    "notes": "Notas Especiales (opcional)",
+    "language": "Idioma de Comunicación",
+    "submit": "Solicitar Mi Visita Gratuita →",
+    "success": "¡Gracias! Recibimos tu solicitud y te llamaremos en 24 horas para confirmar tu visita.",
+    "error": "Algo salió mal. Por favor intenta de nuevo o llámanos directamente.",
+    "serviceTypes": {
+      "residential": "Limpieza Residencial",
+      "commercial": "Limpieza Comercial"
+    },
+    "frequencies": {
+      "oneTime": "Una vez",
+      "weekly": "Semanal",
+      "biweekly": "Quincenal",
+      "monthly": "Mensual"
+    },
+    "homeSizes": {
+      "studio": "Estudio / Pequeño (menos de 800 sq ft)",
+      "medium": "Mediano (800–1,400 sq ft)",
+      "large": "Grande (1,400–2,200 sq ft)",
+      "xlarge": "Extra Grande (2,200+ sq ft)",
+      "commercial": "Comercial — por favor describe abajo"
+    },
+    "times": {
+      "morning": "Mañana (8am–12pm)",
+      "afternoon": "Tarde (12pm–4pm)",
+      "flexible": "Flexible"
+    }
+  },
+  "about": {
+    "label": "NUESTRA HISTORIA",
+    "headline": "Sobre Comfy Clean Co.",
+    "p1": "Comfy Clean Co. es una empresa de limpieza local con raíces en la comunidad del Este de El Paso. Comenzamos porque creemos que cada hogar y negocio merece un espacio verdaderamente limpio.",
+    "p2": "Servimos a familias profesionales ocupadas y negocios en el Este de El Paso, Horizon City, Socorro y áreas cercanas. Nuestro equipo es bilingüe, profesional y comprometido a llegar puntual y limpiar bien desde la primera vez.",
+    "p3": "No somos una franquicia. Somos tus vecinos."
+  },
+  "contact": {
+    "label": "CONTÁCTANOS",
+    "headline": "Contacta a Comfy Clean Co.",
+    "phone_label": "Teléfono",
+    "email_label": "Correo",
+    "location_label": "Área de Servicio",
+    "location_value": "Este de El Paso, Horizon City, Socorro, TX",
+    "cta": "Reserva una Visita Gratis →"
+  },
+  "footer": {
+    "tagline": "Clean · Fresh · Reliable",
+    "copyright": "© 2025 Comfy Clean Co. Todos los derechos reservados.",
+    "location": "Este de El Paso, TX"
+  }
+}
