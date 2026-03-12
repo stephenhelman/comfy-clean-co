@@ -1,12 +1,12 @@
-import { Resend } from "resend";
 import { BookingData } from "./services";
 
-/* const resend = new Resend(process.env.RESEND_API_KEY);
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://comfycleanco.com";
-const businessEmail = process.env.BUSINESS_EMAIL ?? "comfycleanelpaso@gmail.com";
-const fromEmail = "noreply@comfycleanco.com";
-
 export async function sendCustomerConfirmation(data: BookingData): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://comfycleanco.com";
+  const fromEmail = "noreply@comfycleanco.com";
   const isSpanish = data.languagePreference === "Español";
 
   const subject = isSpanish
@@ -86,6 +86,13 @@ export async function sendCustomerConfirmation(data: BookingData): Promise<void>
 }
 
 export async function sendBusinessNotification(data: BookingData): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const businessEmail = process.env.BUSINESS_EMAIL ?? "comfycleanelpaso@gmail.com";
+  const fromEmail = "noreply@comfycleanco.com";
+
   const subject = `New Booking Request — ${data.name} — ${data.serviceType}`;
 
   const body = `
@@ -112,4 +119,3 @@ Notes:        ${data.notes || "(none)"}
     text: body,
   });
 }
- */
