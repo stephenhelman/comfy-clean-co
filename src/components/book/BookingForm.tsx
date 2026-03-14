@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import React, { useState, useEffect } from "react";
 
 interface BookingFormProps {
   t: {
@@ -30,10 +30,25 @@ const inputClass =
 
 const labelClass = "block font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-2";
 
+const PREFILL_KEY = "comfy_quote_prefill";
+
 export default function BookingForm({ t }: BookingFormProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [langPref, setLangPref] = useState<"English" | "Español">("English");
+  const [prefill, setPrefill] = useState({ name: "", phone: "", serviceType: "" });
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(PREFILL_KEY);
+      if (stored) {
+        setPrefill(JSON.parse(stored));
+        localStorage.removeItem(PREFILL_KEY);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const required = ["name", "phone", "email", "address", "serviceType", "frequency", "homeSize", "preferredDate", "preferredTime"];
 
@@ -51,7 +66,7 @@ export default function BookingForm({ t }: BookingFormProps) {
     return valid;
   }
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
 
@@ -103,7 +118,7 @@ export default function BookingForm({ t }: BookingFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+    <form key={prefill.name + prefill.phone + prefill.serviceType} onSubmit={handleSubmit} noValidate className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Full Name */}
         <div>
@@ -113,6 +128,7 @@ export default function BookingForm({ t }: BookingFormProps) {
             name="name"
             type="text"
             placeholder={t.name}
+            defaultValue={prefill.name}
             className={`${inputClass} ${fieldBorder("name")}`}
             onBlur={(e) => {
               if (!e.target.value.trim()) setErrors((prev) => ({ ...prev, name: true }));
@@ -129,6 +145,7 @@ export default function BookingForm({ t }: BookingFormProps) {
             name="phone"
             type="tel"
             placeholder={t.phone}
+            defaultValue={prefill.phone}
             className={`${inputClass} ${fieldBorder("phone")}`}
             onBlur={(e) => {
               if (!e.target.value.trim()) setErrors((prev) => ({ ...prev, phone: true }));
@@ -175,7 +192,7 @@ export default function BookingForm({ t }: BookingFormProps) {
           <select
             id="serviceType"
             name="serviceType"
-            defaultValue=""
+            defaultValue={prefill.serviceType || ""}
             className={`${inputClass} ${fieldBorder("serviceType")}`}
           >
             <option value="" disabled>{t.serviceType}</option>

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface HeroProps {
   locale: string;
@@ -10,6 +12,8 @@ interface HeroProps {
   ctaSecondary: string;
 }
 
+const PREFILL_KEY = "comfy_quote_prefill";
+
 export default function Hero({
   locale,
   headline,
@@ -17,6 +21,17 @@ export default function Hero({
   ctaPrimary,
   ctaSecondary,
 }: HeroProps) {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [service, setService] = useState("");
+
+  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    localStorage.setItem(PREFILL_KEY, JSON.stringify({ name, phone, serviceType: service }));
+    router.push(`/${locale}/book`);
+  }
+
   return (
     <>
       <section className="relative min-h-[90vh] flex items-stretch overflow-hidden bg-white">
@@ -52,7 +67,7 @@ export default function Hero({
             {/* Inline quick-quote form */}
             <form
               className="w-full bg-white border border-gray-200 rounded-xl p-6 shadow-md flex flex-col gap-4"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSubmit}
             >
               <p className="font-poppins font-bold text-brand-navy text-lg">
                 Get Your Free Quote
@@ -60,16 +75,21 @@ export default function Hero({
               <input
                 type="text"
                 placeholder="Your Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="bg-white border border-gray-300 text-brand-navy-dark placeholder-gray-400 rounded-md px-4 py-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none"
               />
               <input
                 type="tel"
                 placeholder="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="bg-white border border-gray-300 text-brand-navy-dark placeholder-gray-400 rounded-md px-4 py-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none"
               />
               <select
+                value={service}
+                onChange={(e) => setService(e.target.value)}
                 className="bg-white border border-gray-300 text-brand-navy-dark rounded-md px-4 py-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none"
-                defaultValue=""
               >
                 <option value="" disabled>
                   Service Needed
