@@ -34,13 +34,13 @@ export default async function ServicesPage({ params }: PageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-brand-black py-24">
+    <div className="min-h-screen bg-white py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionLabel text={t.label ?? "WHAT WE OFFER"} />
-        <h1 className="font-montserrat font-black text-5xl text-brand-white mb-4">
+        <h1 className="font-poppins font-bold text-5xl text-brand-navy mb-4">
           {t.headline ?? "Our Cleaning Services"}
         </h1>
-        <p className="font-inter text-brand-silver text-lg max-w-2xl mb-12">
+        <p className="font-inter text-brand-navy-dark text-lg max-w-2xl mb-12">
           Professional residential and commercial cleaning tailored to your needs. Every service includes our reliability guarantee — we show up on time or your next visit is free.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">

@@ -26,9 +26,9 @@ interface BookingFormProps {
 }
 
 const inputClass =
-  "w-full bg-brand-card border border-brand-border text-brand-white placeholder:text-brand-gray-mid rounded px-4 py-3 font-inter text-sm focus:border-brand-blue focus:ring-0 focus:outline-none transition-colors";
+  "w-full bg-white border border-gray-300 text-brand-navy-dark placeholder:text-gray-400 rounded-md px-4 py-3 font-inter text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none transition-colors";
 
-const labelClass = "block font-montserrat font-bold text-xs uppercase tracking-wider text-brand-gray-light mb-2";
+const labelClass = "block font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-2";
 
 export default function BookingForm({ t }: BookingFormProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -95,9 +95,9 @@ export default function BookingForm({ t }: BookingFormProps) {
 
   if (status === "success") {
     return (
-      <div className="bg-brand-card border border-brand-blue rounded-lg p-8 text-center">
-        <div className="text-brand-blue text-5xl mb-4">✓</div>
-        <p className="font-montserrat font-bold text-xl text-brand-white mb-2">{t.success}</p>
+      <div className="bg-brand-green-pale border border-brand-green rounded-xl p-8 text-center">
+        <div className="text-brand-green text-5xl mb-4">✓</div>
+        <p className="font-poppins font-bold text-xl text-brand-navy mb-2">{t.success}</p>
       </div>
     );
   }
@@ -227,7 +227,6 @@ export default function BookingForm({ t }: BookingFormProps) {
             name="preferredDate"
             type="date"
             className={`${inputClass} ${fieldBorder("preferredDate")}`}
-            style={{ colorScheme: "dark" }}
           />
         </div>
 
@@ -269,10 +268,10 @@ export default function BookingForm({ t }: BookingFormProps) {
               key={lang}
               type="button"
               onClick={() => setLangPref(lang)}
-              className={`px-4 py-2 rounded font-montserrat font-bold text-xs uppercase tracking-wider transition-colors ${
+              className={`px-4 py-2 rounded-md font-poppins font-bold text-xs uppercase tracking-wider transition-colors ${
                 langPref === lang
-                  ? "bg-brand-blue text-brand-black"
-                  : "border border-brand-border text-brand-silver hover:border-brand-blue"
+                  ? "bg-brand-green text-white"
+                  : "border border-gray-300 text-brand-navy hover:border-brand-green"
               }`}
             >
               {lang}
@@ -283,14 +282,14 @@ export default function BookingForm({ t }: BookingFormProps) {
 
       {/* Error message */}
       {status === "error" && (
-        <p className="text-red-400 font-inter text-sm">{t.error}</p>
+        <p className="text-red-500 font-inter text-sm">{t.error}</p>
       )}
 
       {/* Submit */}
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full bg-brand-blue text-brand-black font-montserrat font-bold uppercase tracking-wider py-4 rounded hover:bg-brand-blue-light transition-colors disabled:opacity-50 text-sm"
+        className="w-full bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold uppercase tracking-wider py-4 rounded-md transition-colors disabled:opacity-50 text-sm"
       >
         {status === "loading" ? "..." : t.submit}
       </button>

@@ -29,10 +29,10 @@ export default function WhyUs({ t }: WhyUsProps) {
   ];
 
   return (
-    <section className="py-24 bg-brand-black">
+    <section className="py-24 bg-brand-green">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionLabel text={t.label} />
-        <h2 className="font-montserrat font-black text-4xl sm:text-5xl text-brand-white mb-12">
+        <SectionLabel text={t.label} light />
+        <h2 className="font-poppins font-bold text-4xl sm:text-5xl text-white mb-12">
           {t.headline}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -41,23 +41,15 @@ export default function WhyUs({ t }: WhyUsProps) {
             return (
               <div
                 key={i}
-                className="bg-brand-card border border-brand-border rounded-lg p-6 hover:border-brand-blue transition-all duration-200 group"
-                style={{ transition: "box-shadow 0.2s" }}
-                onMouseOver={(e) =>
-                  ((e.currentTarget as HTMLDivElement).style.boxShadow =
-                    "0 0 20px #5BB8E820")
-                }
-                onMouseOut={(e) =>
-                  ((e.currentTarget as HTMLDivElement).style.boxShadow = "none")
-                }
+                className="bg-white/15 border border-white/25 rounded-xl p-6 hover:bg-white/20 transition-colors duration-200"
               >
-                <div className="mb-4">
-                  <Icon size={28} className="text-brand-blue" />
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-4">
+                  <Icon size={24} className="text-white" />
                 </div>
-                <h3 className="font-montserrat font-bold text-lg text-brand-white mb-2">
+                <h3 className="font-poppins font-bold text-lg text-white mb-2">
                   {card.title}
                 </h3>
-                <p className="font-inter text-sm text-brand-silver leading-relaxed">
+                <p className="font-inter text-sm text-white/85 leading-relaxed">
                   {card.desc}
                 </p>
               </div>

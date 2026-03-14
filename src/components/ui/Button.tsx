@@ -7,7 +7,7 @@ interface ButtonProps {
   children: React.ReactNode;
   href?: string;
   onClick?: () => void;
-  variant?: "primary" | "ghost";
+  variant?: "primary" | "secondary";
   type?: "button" | "submit";
   className?: string;
   disabled?: boolean;
@@ -23,12 +23,12 @@ export default function Button({
   disabled = false,
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center font-montserrat font-bold uppercase tracking-wider px-6 py-3 rounded transition-all duration-200 text-sm";
+    "inline-flex items-center justify-center font-poppins font-bold uppercase tracking-wider px-6 py-3 rounded-md transition-all duration-200 text-sm";
   const variants = {
     primary:
-      "bg-brand-blue text-brand-black hover:bg-brand-blue-light active:bg-brand-blue-dark disabled:opacity-50",
-    ghost:
-      "border border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-brand-black active:bg-brand-blue-dark disabled:opacity-50",
+      "bg-brand-green text-white hover:bg-brand-green-dark active:bg-brand-green-dark disabled:opacity-50",
+    secondary:
+      "border-2 border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white active:bg-brand-navy-dark disabled:opacity-50",
   };
 
   const classes = `${base} ${variants[variant]} ${className}`;

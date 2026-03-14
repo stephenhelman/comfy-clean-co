@@ -4,7 +4,7 @@ interface BadgeProps {
 
 export default function Badge({ children }: BadgeProps) {
   return (
-    <span className="inline-block bg-brand-blue-glow border border-brand-blue text-brand-blue text-xs font-montserrat font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+    <span className="inline-block bg-brand-green-pale border border-brand-green text-brand-green text-xs font-poppins font-bold uppercase tracking-wider px-3 py-1 rounded-full">
       {children}
     </span>
   );

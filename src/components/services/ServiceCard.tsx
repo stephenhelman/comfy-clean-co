@@ -15,24 +15,16 @@ interface ServiceCardProps {
 export default function ServiceCard({ icon, title, desc, features }: ServiceCardProps) {
   const Icon = iconMap[icon];
   return (
-    <div
-      className="bg-brand-card border border-brand-border border-t-2 border-t-brand-blue rounded-lg p-6 hover:border-brand-blue transition-all duration-200"
-      onMouseOver={(e) =>
-        ((e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 20px #5BB8E820")
-      }
-      onMouseOut={(e) =>
-        ((e.currentTarget as HTMLDivElement).style.boxShadow = "none")
-      }
-    >
-      <div className="mb-4">
-        <Icon size={36} className="text-brand-blue" />
+    <div className="bg-brand-off-white border border-gray-200 border-t-4 border-t-brand-green rounded-xl p-6 hover:shadow-md transition-shadow duration-200">
+      <div className="w-12 h-12 rounded-full bg-brand-green-pale flex items-center justify-center mb-4">
+        <Icon size={24} className="text-brand-green" />
       </div>
-      <h3 className="font-montserrat font-bold text-xl text-brand-white mb-2">{title}</h3>
-      <p className="font-inter text-sm text-brand-silver leading-relaxed mb-4">{desc}</p>
+      <h3 className="font-poppins font-bold text-xl text-brand-navy mb-2">{title}</h3>
+      <p className="font-inter text-sm text-brand-navy-dark leading-relaxed mb-4">{desc}</p>
       <ul className="space-y-2">
         {features.map((f) => (
-          <li key={f} className="flex items-center gap-2 text-sm text-brand-gray-light font-inter">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-blue flex-shrink-0" />
+          <li key={f} className="flex items-center gap-2 text-sm text-brand-navy-dark font-inter">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-green shrink-0" />
             {f}
           </li>
         ))}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 
 interface NavbarProps {
   locale: string;
@@ -20,8 +20,6 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const otherLocale = locale === "en" ? "es" : "en";
-
-  // Build the same path in the other locale
   const otherLocalePath = pathname.replace(`/${locale}`, `/${otherLocale}`);
 
   const links = [
@@ -32,31 +30,37 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-brand-black border-b border-brand-border">
+    <header className="sticky top-0 z-50 bg-brand-navy shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href={`/${locale}`} className="flex items-center gap-2">
             <img
-              src="/images/brand/logo.png"
+              src="/images/brand/logo-white.png"
               alt="Comfy Clean Co."
-              className="h-8 w-auto"
+              className="h-9 w-auto"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = "none";
               }}
             />
-            <span className="font-montserrat font-black text-brand-white text-lg hidden sm:block">
-              Comfy Clean Co.
-            </span>
           </Link>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
+            {/* Phone */}
+            <a
+              href="tel:+19155550100"
+              className="flex items-center gap-1.5 font-poppins font-bold text-white text-sm hover:text-brand-green-light transition-colors"
+            >
+              <Phone size={15} />
+              (915) 555-0100
+            </a>
+
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="font-inter text-sm text-brand-silver hover:text-brand-white transition-colors"
+                className="font-inter text-sm text-white/80 hover:text-white transition-colors"
               >
                 {link.label}
               </Link>
@@ -65,7 +69,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
             {/* Language toggle */}
             <Link
               href={otherLocalePath}
-              className="font-montserrat font-bold text-xs uppercase tracking-wider text-brand-gray-mid hover:text-brand-silver transition-colors"
+              className="font-poppins font-bold text-xs uppercase tracking-wider text-white/60 hover:text-white transition-colors"
             >
               {otherLocale === "en" ? "EN" : "ES"}
             </Link>
@@ -73,7 +77,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
             {/* Book CTA */}
             <Link
               href={`/${locale}/book`}
-              className="bg-brand-blue text-brand-black font-montserrat font-bold text-sm uppercase tracking-wider px-4 py-2 rounded hover:bg-brand-blue-light transition-colors"
+              className="bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold text-sm uppercase tracking-wider px-4 py-2 rounded-md transition-colors"
             >
               {navLabels.book}
             </Link>
@@ -81,7 +85,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden text-brand-silver p-2"
+            className="md:hidden text-white p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -92,28 +96,35 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-brand-charcoal border-t border-brand-border px-4 py-4 flex flex-col gap-4">
+        <div className="md:hidden bg-brand-navy-dark border-t border-white/10 px-4 py-4 flex flex-col gap-4">
+          <a
+            href="tel:+19155550100"
+            className="flex items-center gap-2 font-poppins font-bold text-brand-green text-sm"
+          >
+            <Phone size={15} />
+            (915) 555-0100
+          </a>
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="font-inter text-brand-silver hover:text-brand-white transition-colors"
+              className="font-inter text-white/80 hover:text-white transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
             </Link>
           ))}
-          <div className="flex items-center gap-4 pt-2 border-t border-brand-border">
+          <div className="flex items-center gap-4 pt-2 border-t border-white/10">
             <Link
               href={otherLocalePath}
-              className="font-montserrat font-bold text-xs uppercase tracking-wider text-brand-gray-mid"
+              className="font-poppins font-bold text-xs uppercase tracking-wider text-white/60"
               onClick={() => setMobileOpen(false)}
             >
               {otherLocale === "en" ? "EN" : "ES"}
             </Link>
             <Link
               href={`/${locale}/book`}
-              className="flex-1 text-center bg-brand-blue text-brand-black font-montserrat font-bold text-sm uppercase tracking-wider px-4 py-2 rounded hover:bg-brand-blue-light transition-colors"
+              className="flex-1 text-center bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold text-sm uppercase tracking-wider px-4 py-2 rounded-md transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               {navLabels.book}

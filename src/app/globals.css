@@ -1,43 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --color-brand-black:       #0A0A0A;
-  --color-brand-charcoal:    #111111;
-  --color-brand-card:        #1A1A1A;
-  --color-brand-border:      #2A2A2A;
-  --color-brand-blue:        #5BB8E8;
-  --color-brand-blue-light:  #A8D8F0;
-  --color-brand-blue-dark:   #2E86C1;
-  --color-brand-blue-glow:   #5BB8E820;
-  --color-brand-white:       #FFFFFF;
-  --color-brand-silver:      #C0C0C0;
-  --color-brand-gray-light:  #D1D5DB;
-  --color-brand-gray-mid:    #6B7280;
+  --color-brand-navy:        #2B5C78;
+  --color-brand-navy-dark:   #1A3A4A;
+  --color-brand-navy-light:  #3A7A9C;
+  --color-brand-green:       #51A755;
+  --color-brand-green-dark:  #3D8040;
+  --color-brand-green-light: #6DC272;
+  --color-brand-green-pale:  #E8F5E9;
+  --color-brand-gray-light:  #ECECEC;
+  --color-brand-gray-mid:    #9CA3AF;
   --color-brand-gray-dark:   #374151;
+  --color-brand-white:       #FFFFFF;
+  --color-brand-off-white:   #F9FAFB;
 
-  --font-montserrat: "Montserrat", sans-serif;
-  --font-inter:      "Inter", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-inter:   "Inter", sans-serif;
 }
 
 :root {
-  --blue:       #5BB8E8;
-  --blue-light: #A8D8F0;
-  --blue-dark:  #2E86C1;
-  --black:      #0A0A0A;
-  --card:       #1A1A1A;
-  --border:     #2A2A2A;
-  --silver:     #C0C0C0;
+  --navy:       #2B5C78;
+  --navy-dark:  #1A3A4A;
+  --green:      #51A755;
+  --green-dark: #3D8040;
+  --gray-light: #ECECEC;
+  --white:      #FFFFFF;
 }
 
 html,
 body {
-  background-color: #0A0A0A;
-  color: #D1D5DB;
+  background-color: #FFFFFF;
+  color: #1A3A4A;
   font-family: "Inter", sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Montserrat", sans-serif;
+  font-family: "Poppins", sans-serif;
 }

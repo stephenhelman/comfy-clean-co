@@ -10,28 +10,29 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          black:    "#0A0A0A",
-          charcoal: "#111111",
-          card:     "#1A1A1A",
-          border:   "#2A2A2A",
-          blue: {
-            DEFAULT: "#5BB8E8",
-            light:   "#A8D8F0",
-            dark:    "#2E86C1",
-            glow:    "#5BB8E820",
+          navy: {
+            DEFAULT: '#2B5C78',
+            dark:    '#1A3A4A',
+            light:   '#3A7A9C',
           },
-          white:  "#FFFFFF",
-          silver: "#C0C0C0",
+          green: {
+            DEFAULT: '#51A755',
+            dark:    '#3D8040',
+            light:   '#6DC272',
+            pale:    '#E8F5E9',
+          },
           gray: {
-            light: "#D1D5DB",
-            mid:   "#6B7280",
-            dark:  "#374151",
+            light: '#ECECEC',
+            mid:   '#9CA3AF',
+            dark:  '#374151',
           },
+          white:      '#FFFFFF',
+          'off-white': '#F9FAFB',
         },
       },
       fontFamily: {
-        montserrat: ["Montserrat", "sans-serif"],
-        inter:      ["Inter", "sans-serif"],
+        poppins: ['Poppins', 'sans-serif'],
+        inter:   ['Inter', 'sans-serif'],
       },
     },
   },

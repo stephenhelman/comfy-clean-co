@@ -41,10 +41,10 @@ export default function ServicesOverview({ locale, t }: ServicesOverviewProps) {
   ];
 
   return (
-    <section className="py-24 bg-brand-charcoal">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionLabel text={t.label} />
-        <h2 className="font-montserrat font-black text-4xl sm:text-5xl text-brand-white mb-12">
+        <h2 className="font-poppins font-bold text-4xl sm:text-5xl text-brand-navy mb-12">
           {t.headline}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -53,28 +53,21 @@ export default function ServicesOverview({ locale, t }: ServicesOverviewProps) {
             return (
               <div
                 key={i}
-                className="bg-brand-card border border-brand-border border-t-2 border-t-brand-blue rounded-lg p-6 hover:border-brand-blue transition-all duration-200"
-                onMouseOver={(e) =>
-                  ((e.currentTarget as HTMLDivElement).style.boxShadow =
-                    "0 0 20px #5BB8E820")
-                }
-                onMouseOut={(e) =>
-                  ((e.currentTarget as HTMLDivElement).style.boxShadow = "none")
-                }
+                className="bg-brand-off-white border border-gray-200 border-t-4 border-t-brand-green rounded-xl p-6 hover:shadow-md transition-shadow duration-200"
               >
-                <div className="mb-4">
-                  <Icon size={32} className="text-brand-blue" />
+                <div className="w-12 h-12 rounded-full bg-brand-green-pale flex items-center justify-center mb-4">
+                  <Icon size={24} className="text-brand-green" />
                 </div>
-                <h3 className="font-montserrat font-bold text-xl text-brand-white mb-2">
+                <h3 className="font-poppins font-bold text-xl text-brand-navy mb-2">
                   {svc.title}
                 </h3>
-                <p className="font-inter text-sm text-brand-silver leading-relaxed mb-4">
+                <p className="font-inter text-sm text-brand-navy-dark leading-relaxed mb-4">
                   {svc.desc}
                 </p>
                 <ul className="space-y-1">
                   {svc.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-brand-gray-light font-inter">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-blue flex-shrink-0" />
+                    <li key={f} className="flex items-center gap-2 text-xs text-brand-navy-dark font-inter">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-green shrink-0" />
                       {f}
                     </li>
                   ))}
@@ -86,7 +79,7 @@ export default function ServicesOverview({ locale, t }: ServicesOverviewProps) {
         <div className="mt-10 text-center">
           <Link
             href={`/${locale}/services`}
-            className="font-montserrat font-bold text-sm uppercase tracking-wider text-brand-blue hover:text-brand-blue-light transition-colors"
+            className="font-poppins font-bold text-sm uppercase tracking-wider text-brand-green hover:text-brand-green-dark transition-colors"
           >
             View All Services →
           </Link>
