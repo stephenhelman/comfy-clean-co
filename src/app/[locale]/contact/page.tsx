@@ -1,7 +1,7 @@
 import { getMessages } from "next-intl/server";
 import { Phone, Mail, MapPin } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
-import Button from "@/components/ui/Button";
+import BookingForm from "@/components/book/BookingForm";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -9,52 +9,65 @@ interface PageProps {
 
 export default async function ContactPage({ params }: PageProps) {
   const { locale } = await params;
-  const messages = await getMessages({ locale }) as Record<string, Record<string, string>>;
+  const messages = await getMessages({ locale }) as Record<string, Record<string, unknown>>;
   const t = messages.contact ?? {};
+  const book = messages.book ?? {};
 
   return (
-    <div className="min-h-screen bg-white py-24">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionLabel text={t.label ?? "GET IN TOUCH"} />
-        <h1 className="font-poppins font-bold text-5xl text-brand-navy mb-12">
-          {t.headline ?? "Contact Comfy Clean Co."}
-        </h1>
+    <div className="min-h-screen bg-white">
+      <div className="py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionLabel text={(t.label as string) ?? "GET IN TOUCH"} />
+          <h1 className="font-poppins font-bold text-5xl text-brand-navy mb-12">
+            {(t.headline as string) ?? "Contact Comfy Clean Co."}
+          </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
-            <div className="w-10 h-10 rounded-full bg-brand-green-pale flex items-center justify-center mb-3">
-              <Phone size={20} className="text-brand-green" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
+              <div className="w-10 h-10 rounded-full bg-brand-green-pale flex items-center justify-center mb-3">
+                <Phone size={20} className="text-brand-green" />
+              </div>
+              <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
+                {(t.phone_label as string) ?? "Phone"}
+              </p>
+              <p className="font-inter text-brand-navy-dark">[PLACEHOLDER — client to provide]</p>
             </div>
-            <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
-              {t.phone_label ?? "Phone"}
-            </p>
-            <p className="font-inter text-brand-navy-dark">[PLACEHOLDER — client to provide]</p>
-          </div>
 
-          <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
-            <div className="w-10 h-10 rounded-full bg-brand-green-pale flex items-center justify-center mb-3">
-              <Mail size={20} className="text-brand-green" />
+            <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
+              <div className="w-10 h-10 rounded-full bg-brand-green-pale flex items-center justify-center mb-3">
+                <Mail size={20} className="text-brand-green" />
+              </div>
+              <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
+                {(t.email_label as string) ?? "Email"}
+              </p>
+              <p className="font-inter text-brand-navy-dark">[PLACEHOLDER — client to provide]</p>
             </div>
-            <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
-              {t.email_label ?? "Email"}
-            </p>
-            <p className="font-inter text-brand-navy-dark">[PLACEHOLDER — client to provide]</p>
-          </div>
 
-          <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
-            <div className="w-10 h-10 rounded-full bg-brand-green-pale flex items-center justify-center mb-3">
-              <MapPin size={20} className="text-brand-green" />
+            <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
+              <div className="w-10 h-10 rounded-full bg-brand-green-pale flex items-center justify-center mb-3">
+                <MapPin size={20} className="text-brand-green" />
+              </div>
+              <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
+                {(t.location_label as string) ?? "Service Area"}
+              </p>
+              <p className="font-inter text-brand-navy-dark">{t.location_value as string}</p>
             </div>
-            <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
-              {t.location_label ?? "Service Area"}
-            </p>
-            <p className="font-inter text-brand-navy-dark">{t.location_value}</p>
           </div>
         </div>
-
-        <Button href={`/${locale}/book`} variant="primary">
-          {t.cta ?? "Book a Free Visit →"}
-        </Button>
+      </div>
+      <div className="bg-brand-gray-light py-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionLabel text={(book.label as string) ?? "GET STARTED"} />
+          <h2 className="font-poppins font-bold text-4xl text-brand-navy mb-4">
+            {(book.headline as string) ?? "Request Your Free Visit"}
+          </h2>
+          <p className="font-inter text-brand-navy-dark text-lg mb-10">
+            Fill out the form below and we&apos;ll call you within 24 hours to confirm.
+          </p>
+          <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm">
+            <BookingForm t={book as Parameters<typeof BookingForm>[0]["t"]} />
+          </div>
+        </div>
       </div>
     </div>
   );
