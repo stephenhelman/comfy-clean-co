@@ -16,20 +16,20 @@ export default async function ServicesPage({ params }: PageProps) {
   const items = [
     {
       icon: "Home" as const,
-      title: t.residential_title ?? "Residential Cleaning",
-      desc: t.residential_desc ?? "",
+      title: (t.residential_title as string) ?? "Residential Cleaning",
+      desc: (t.residential_desc as string) ?? "",
       features: ["Deep Clean", "Standard Clean", "Move-in / Move-out", "Post-construction"],
     },
     {
       icon: "Building2" as const,
-      title: t.commercial_title ?? "Commercial Cleaning",
-      desc: t.commercial_desc ?? "",
+      title: (t.commercial_title as string) ?? "Commercial Cleaning",
+      desc: (t.commercial_desc as string) ?? "",
       features: ["Office Buildings", "Retail Spaces", "Small Commercial", "After-hours available"],
     },
     {
       icon: "CalendarCheck" as const,
-      title: t.recurring_title ?? "Recurring Plans",
-      desc: t.recurring_desc ?? "",
+      title: (t.recurring_title as string) ?? "Recurring Plans",
+      desc: (t.recurring_desc as string) ?? "",
       features: ["Weekly", "Bi-weekly", "Monthly", "Custom schedules"],
     },
   ];

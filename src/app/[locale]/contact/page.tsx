@@ -1,7 +1,7 @@
 import { getMessages } from "next-intl/server";
 import { Phone, Mail, MapPin } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
-import BookingForm from "@/components/book/BookingForm";
+import ContactForm from "@/components/contact/ContactForm";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -11,7 +11,6 @@ export default async function ContactPage({ params }: PageProps) {
   const { locale } = await params;
   const messages = await getMessages({ locale }) as Record<string, Record<string, unknown>>;
   const t = messages.contact ?? {};
-  const book = messages.book ?? {};
 
   return (
     <div className="min-h-screen bg-white">
@@ -30,7 +29,7 @@ export default async function ContactPage({ params }: PageProps) {
               <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
                 {(t.phone_label as string) ?? "Phone"}
               </p>
-              <p className="font-inter text-brand-navy-dark">[PLACEHOLDER — client to provide]</p>
+              <p className="font-inter text-brand-navy-dark">915-979-5151</p>
             </div>
 
             <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
@@ -40,7 +39,7 @@ export default async function ContactPage({ params }: PageProps) {
               <p className="font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-1">
                 {(t.email_label as string) ?? "Email"}
               </p>
-              <p className="font-inter text-brand-navy-dark">[PLACEHOLDER — client to provide]</p>
+              <p className="font-inter text-brand-navy-dark">info@comfycleanco.com</p>
             </div>
 
             <div className="bg-brand-off-white border border-gray-200 rounded-xl p-6">
@@ -57,15 +56,15 @@ export default async function ContactPage({ params }: PageProps) {
       </div>
       <div className="bg-brand-gray-light py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionLabel text={(book.label as string) ?? "GET STARTED"} />
+          <SectionLabel text="SEND A MESSAGE" />
           <h2 className="font-poppins font-bold text-4xl text-brand-navy mb-4">
-            {(book.headline as string) ?? "Request Your Free Visit"}
+            Get in Touch
           </h2>
           <p className="font-inter text-brand-navy-dark text-lg mb-10">
-            Fill out the form below and we&apos;ll call you within 24 hours to confirm.
+            Fill out the form and we&apos;ll get back to you within 24 hours.
           </p>
           <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm">
-            <BookingForm t={book as Parameters<typeof BookingForm>[0]["t"]} />
+            <ContactForm />
           </div>
         </div>
       </div>

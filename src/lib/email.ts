@@ -68,7 +68,7 @@ export async function sendCustomerConfirmation(data: BookingData): Promise<void>
         <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Preferred Time:</strong> ${data.preferredTime}</p>
       </div>
       <p style="color:#D1D5DB;font-size:16px;">Have questions? Call us directly:</p>
-      <p style="color:#5BB8E8;font-size:18px;font-weight:bold;">[PLACEHOLDER — client to provide]</p>
+      <p style="color:#5BB8E8;font-size:18px;font-weight:bold;">915-979-5151</p>
     </td></tr>
     <tr><td style="text-align:center;padding-top:24px;">
       <p style="color:#6B7280;font-size:12px;">Comfy Clean Co. · Far East El Paso, TX · Clean · Fresh · Reliable</p>
