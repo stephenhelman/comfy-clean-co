@@ -49,11 +49,11 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
           <nav className="hidden md:flex items-center gap-6">
             {/* Phone */}
             <a
-              href="tel:+19155550100"
+              href="tel:+19159795151"
               className="flex items-center gap-1.5 font-poppins font-bold text-white text-sm hover:text-brand-green-light transition-colors"
             >
               <Phone size={15} />
-              (915) 555-0100
+              (915) 979-5151
             </a>
 
             {links.map((link) => (
@@ -98,11 +98,11 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
       {mobileOpen && (
         <div className="md:hidden bg-brand-navy-dark border-t border-white/10 px-4 py-4 flex flex-col gap-4">
           <a
-            href="tel:+19155550100"
+            href="tel:+19159795151"
             className="flex items-center gap-2 font-poppins font-bold text-brand-green text-sm"
           >
             <Phone size={15} />
-            (915) 555-0100
+            (915) 979-5151
           </a>
           {links.map((link) => (
             <Link

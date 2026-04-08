@@ -35,11 +35,11 @@ export default function Footer({ locale, t, navLabels }: FooterProps) {
 
           {/* Phone */}
           <a
-            href="tel:+19155550100"
+            href="tel:+19159795151"
             className="flex items-center gap-2 font-poppins font-bold text-brand-green text-lg hover:text-brand-green-light transition-colors"
           >
             <Phone size={18} />
-            (915) 555-0100
+            (915) 979-5151
           </a>
 
           {/* Tagline */}
