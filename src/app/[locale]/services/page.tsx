@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import { getMessages } from "next-intl/server";
 import SectionLabel from "@/components/ui/SectionLabel";
 import ServiceCard from "@/components/services/ServiceCard";
 import BookingForm from "@/components/book/BookingForm";
+
+export const metadata: Metadata = {
+  title: "Services",
+  description:
+    "Explore Comfy Clean Co's residential and commercial cleaning services in Far East El Paso, TX. Deep cleans, recurring plans, move-out cleaning, and more.",
+  alternates: {
+    canonical: "https://comfycleanco.com/services",
+  },
+};
 
 interface PageProps {
   params: Promise<{ locale: string }>;

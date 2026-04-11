@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import { getMessages } from "next-intl/server";
 import { Phone, Mail, MapPin } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import ContactForm from "@/components/contact/ContactForm";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description:
+    "Get in touch with Comfy Clean Co in Far East El Paso, TX. Call, email, or fill out our contact form and we'll respond within 24 hours.",
+  alternates: {
+    canonical: "https://comfycleanco.com/contact",
+  },
+};
 
 interface PageProps {
   params: Promise<{ locale: string }>;

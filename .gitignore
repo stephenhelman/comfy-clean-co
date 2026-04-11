@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# turbo
+.turbo
+
+# credentials (Google Sheets service account keys, etc.)
+*-key.json
+*credentials*.json
+service-account*.json

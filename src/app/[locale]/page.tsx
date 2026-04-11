@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getMessages } from "next-intl/server";
 import Hero from "@/components/home/Hero";
 import WhyUs from "@/components/home/WhyUs";
@@ -5,6 +6,38 @@ import ServicesOverview from "@/components/home/ServicesOverview";
 import ServiceArea from "@/components/home/ServiceArea";
 import SectionLabel from "@/components/ui/SectionLabel";
 import BookingForm from "@/components/book/BookingForm";
+
+export const metadata: Metadata = {
+  title: "Comfy Clean Co | Professional Cleaning Services in El Paso, TX",
+  description:
+    "Professional residential and commercial cleaning in Far East El Paso, TX. Trusted house cleaning, deep clean, move-out, and commercial services. Book today.",
+  alternates: {
+    canonical: "https://comfycleanco.com",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": ["LocalBusiness", "CleaningService"],
+  name: "Comfy Clean Co",
+  url: "https://comfycleanco.com",
+  // TODO: Replace with real phone number
+  telephone: "915-979-5151",
+  email: "info@comfycleanco.com",
+  description:
+    "Professional residential and commercial cleaning in Far East El Paso, TX. Trusted house cleaning, deep clean, move-out, and commercial services. Book today.",
+  areaServed: ["Far East El Paso", "El Paso", "TX"],
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "El Paso",
+    addressRegion: "TX",
+    addressCountry: "US",
+  },
+  priceRange: "$$",
+  openingHours: ["Mo-Sa 08:00-18:00"],
+  // TODO: Replace with real Google Business Profile and Facebook URLs
+  sameAs: ["", ""],
+};
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -22,6 +55,10 @@ export default async function HomePage({ params }: PageProps) {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Hero
         locale={locale}
         headline={(hero.headline as string) ?? "Your Home, Professionally Clean."}

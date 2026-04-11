@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import { getMessages } from "next-intl/server";
 import SectionLabel from "@/components/ui/SectionLabel";
 import BookingForm from "@/components/book/BookingForm";
+
+export const metadata: Metadata = {
+  title: "Book a Cleaning",
+  description:
+    "Request a free visit from Comfy Clean Co in Far East El Paso, TX. Fill out the form and we'll confirm within 24 hours. Residential and commercial cleaning available.",
+  alternates: {
+    canonical: "https://comfycleanco.com/book",
+  },
+};
 
 interface PageProps {
   params: Promise<{ locale: string }>;

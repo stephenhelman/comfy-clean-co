@@ -1,16 +1,9 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import "@/app/globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-
-export const metadata: Metadata = {
-  title: "Comfy Clean Co. | Far East El Paso Cleaning Service",
-  description:
-    "Professional residential and commercial cleaning in Far East El Paso, TX. Book a free visit today.",
-};
 
 const locales = ["en", "es"];
 
