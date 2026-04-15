@@ -47,3 +47,5 @@ next-env.d.ts
 *-key.json
 *credentials*.json
 service-account*.json
+
+.claude

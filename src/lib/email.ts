@@ -6,12 +6,12 @@ export async function sendCustomerConfirmation(data: BookingData): Promise<void>
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://comfycleanco.com";
-  const fromEmail = "noreply@comfycleanco.com";
+  const fromEmail = process.env.EMAIL_NOREPLY ?? "noreply@comfycleanco.com";
   const isSpanish = data.languagePreference === "Español";
 
   const subject = isSpanish
-    ? "Recibimos tu solicitud — Comfy Clean Co."
-    : "We received your booking request — Comfy Clean Co.";
+    ? "Recibimos tu solicitud de servicio — Comfy Clean Co"
+    : "Your booking request was received — Comfy Clean Co";
 
   const bodyHtml = isSpanish
     ? `
@@ -90,8 +90,8 @@ export async function sendBusinessNotification(data: BookingData): Promise<void>
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const businessEmail = process.env.BUSINESS_EMAIL ?? "comfycleanelpaso@gmail.com";
-  const fromEmail = "noreply@comfycleanco.com";
+  const businessEmail = process.env.EMAIL_SCHEDULING ?? "scheduling@comfycleanco.com";
+  const fromEmail = process.env.EMAIL_NOREPLY ?? "noreply@comfycleanco.com";
 
   const subject = `New Booking Request — ${data.name} — ${data.serviceType}`;
 

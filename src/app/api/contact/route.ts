@@ -55,15 +55,15 @@ export async function POST(req: NextRequest) {
   try {
     const { Resend } = await import("resend");
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const contactEmail = process.env.CONTACT_EMAIL ?? "info@comfycleanco.com";
-    const fromEmail = "noreply@comfycleanco.com";
+    const contactEmail = process.env.EMAIL_INFO ?? "info@comfycleanco.com";
+    const fromEmail = process.env.EMAIL_NOREPLY ?? "noreply@comfycleanco.com";
 
     await Promise.all([
       // Owner notification
       resend.emails.send({
         from: fromEmail,
         to: contactEmail,
-        subject: `New Lead: ${name}`,
+        subject: "New Contact Inquiry — Comfy Clean Co",
         html: `
 <!DOCTYPE html>
 <html>
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       resend.emails.send({
         from: fromEmail,
         to: email,
-        subject: `We got your request, ${firstName}!`,
+        subject: "We received your message — Comfy Clean Co",
         html: `
 <!DOCTYPE html>
 <html>
