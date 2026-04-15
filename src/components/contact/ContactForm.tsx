@@ -17,11 +17,12 @@ type Fields = {
   phone: string;
   service: string;
   message: string;
+  website: string;
 };
 
 type FieldErrors = Partial<Record<keyof Fields, string>>;
 
-const empty: Fields = { name: "", email: "", phone: "", service: "", message: "" };
+const empty: Fields = { name: "", email: "", phone: "", service: "", message: "", website: "" };
 
 export default function ContactForm() {
   const [fields, setFields] = useState<Fields>(empty);
@@ -106,6 +107,17 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
+      {/* Honeypot — hidden from real users, catches bots that fill all fields */}
+      <input
+        type="text"
+        name="website"
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden="true"
+        style={{ display: "none" }}
+        value={fields.website}
+        onChange={set("website")}
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Name */}
         <div>

@@ -9,6 +9,19 @@ const ratelimit = new Ratelimit({
 });
 
 export async function POST(req: NextRequest) {
+  // Parse body
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  // Honeypot check — silent 200 for bots, no Upstash call wasted
+  if ((body as Record<string, unknown>).website) {
+    return NextResponse.json({ success: true }, { status: 200 });
+  }
+
   // Rate limiting
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "anonymous";
@@ -22,14 +35,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 429 }
     );
-  }
-
-  // Parse body
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
   // Zod validation

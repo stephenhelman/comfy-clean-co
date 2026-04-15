@@ -86,6 +86,7 @@ export default function BookingForm({ t }: BookingFormProps) {
       preferredTime: (form.elements.namedItem("preferredTime") as HTMLSelectElement).value,
       notes: (form.elements.namedItem("notes") as HTMLTextAreaElement).value,
       languagePreference: langPref,
+      website: (form.elements.namedItem("website") as HTMLInputElement)?.value ?? "",
     };
 
     try {
@@ -119,6 +120,17 @@ export default function BookingForm({ t }: BookingFormProps) {
 
   return (
     <form key={prefill.name + prefill.phone + prefill.serviceType} onSubmit={handleSubmit} noValidate className="space-y-6">
+      {/* Honeypot — hidden from real users, catches bots that fill all fields */}
+      <input
+        type="text"
+        name="website"
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden="true"
+        style={{ display: "none" }}
+        value=""
+        onChange={() => {}}
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Full Name */}
         <div>
