@@ -1,0 +1,535 @@
+// Comfy Clean Co — Complete canonical schema
+// Single init migration — all models defined here (addendum C-01 through C-10 applied)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── AdminUser (C-08: full definition with invite fields) ────────────────────
+model AdminUser {
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  role            String    // owner | manager | bookkeeper | dispatcher | viewer
+
+  // Invite flow (wired in Phase 12 — present from init)
+  inviteToken         String?   @unique
+  inviteTokenExpiry   DateTime?
+  invitedBy           String?
+  invitedAt           DateTime?
+  acceptedAt          DateTime?
+
+  // Status
+  active          Boolean   @default(false)
+  deactivatedAt   DateTime?
+  deactivatedBy   String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([email])
+  @@index([role])
+  @@index([active])
+  @@index([inviteToken])
+}
+
+// ─── BusinessSettings (C-02: canonical full definition) ─────────────────────
+model BusinessSettings {
+  id                          String     @id @default(cuid())
+
+  // Business Identity
+  businessName                String     @default("Comfy Clean Co.")
+  businessAddress             String?
+  businessCity                String?
+  businessZip                 String?
+  businessPhone               String?
+  businessEmail               String?
+  logoUrl                     String?
+
+  // Branding
+  brandColor                  String     @default("#0D9488")
+  emailFromName               String     @default("Comfy Clean Co.")
+  emailReplyTo                String?
+
+  // Scheduling Rules
+  maxJobsPerDay               Int        @default(8)
+  maxJobsPerCleaner           Int        @default(3)
+  workdayStartHour            Int        @default(8)
+  workdayEndHour              Int        @default(18)
+  serviceZipCodes             String[]
+  blackoutDates               DateTime[]
+
+  // Invoice and Payment
+  cancellationWindowHours     Int        @default(24)
+  cancellationFeeDefault      Float?
+  invoiceFooterText           String?
+  invoiceNumberPrefix         String     @default("INV")
+  invoiceNumberSeed           Int        @default(1)
+  zellePaymentLink            String?
+  defaultPaymentMethod        String     @default("zelle")
+
+  // Review Requests
+  googlePlaceId               String?
+  reviewRequestHour           Int        @default(9)
+  reviewRequestSkipWeekends   Boolean    @default(false)
+  reviewCooldownDays          Int        @default(30)
+
+  // Google Reviews (written by cron — not editable in UI)
+  googleOverallRating         Float?
+  googleTotalRatings          Int?
+
+  // Notifications
+  adminNotificationEmail      String?
+  adminNotificationPhone      String?
+
+  // Automation Settings (Phase 13)
+  automationSettings          Json       @default("{\"globalPause\":false,\"clientCommunications\":{\"enabled\":true,\"appointmentReminder\":true,\"cleanerOnTheWay\":true,\"reviewRequest\":true},\"adminAlerts\":{\"enabled\":true,\"staleLead\":true,\"overdueInvoice\":true,\"openClockEntry\":true,\"capacityWarning\":true,\"negativeReview\":true,\"pinLocked\":true,\"newLead\":true},\"financialAutomations\":{\"enabled\":true,\"invoiceGeneration\":true,\"overdueTransition\":true}}")
+  appointmentReminderHour     Int        @default(18)
+  overdueDailyAlertThreshold  Int        @default(1)
+
+  // Integrations
+  googleMyBusinessConnected   Boolean    @default(false)
+  twilioConnected             Boolean    @default(false)
+  ghlConnected                Boolean    @default(false)
+
+  // Timestamps
+  updatedAt                   DateTime   @updatedAt
+  updatedBy                   String?
+}
+
+// ─── ActivityLog (C-04: actor fields added) ──────────────────────────────────
+model ActivityLog {
+  id          String   @id @default(cuid())
+  eventType   String
+  description String
+  linkPath    String?
+  actorName   String?  // admin user name — null for system/cron events
+  actorId     String?  // AdminUser.id — null for system/cron events
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([eventType])
+}
+
+// ─── LeadInquiry (C-05: SMS opt-in fields added) ─────────────────────────────
+model LeadInquiry {
+  id            String    @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  type          String    // residential | commercial
+  frequency     String    // one-time | recurring
+  preferredDay  String?
+  preferredTime String?
+  notes         String?
+  source        String?
+  adminNotes    String?
+  status        String    @default("new") // new | contacted | quote_sent | converted | lost
+  contactedAt   DateTime?
+  contactedBy   String?
+  convertedAt   DateTime?
+  lostAt        DateTime?
+  lostReason    String?
+  clientId      String?
+  quoteId       String?   // stub — null until quoting system built
+
+  // SMS opt-in (wired in Phase 11 — present from init per C-05)
+  smsOptInSent      Boolean   @default(false)
+  smsOptInSentAt    DateTime?
+  smsOptedIn        Boolean   @default(false)
+  smsOptedInAt      DateTime?
+  smsOptedOut       Boolean   @default(false)
+  smsOptedOutAt     DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([type])
+  @@index([frequency])
+}
+
+// ─── Client (C-06: SMS opt-in + lastReviewRequestedAt added) ─────────────────
+model Client {
+  id                    String    @id @default(cuid())
+
+  // Identity
+  name                  String
+  email                 String?
+  phone                 String?
+  type                  String    // residential | commercial
+  companyName           String?
+
+  // Secondary contact
+  secondaryContactName  String?
+  secondaryContactEmail String?
+  secondaryContactPhone String?
+  secondaryContactTitle String?
+
+  // Default service address
+  defaultAddress        String?
+  defaultCity           String?
+  defaultZip            String?
+
+  // Access notes
+  accessNotes           String?
+  petNotes              String?
+  specialInstructions   String?
+
+  // Service preferences
+  defaultFrequency      String?
+  defaultJobType        String?
+  preferredDay          String?
+  preferredTime         String?
+  preferredCleanerId    String?
+
+  // Billing preferences
+  preferredPaymentMethod String?
+  standardRate          Float?
+
+  // Relationship
+  acquisitionSource     String?
+  referredBy            String?
+  clientSince           DateTime  @default(now())
+  internalNotes         String?
+
+  // Status
+  active                Boolean   @default(true)
+
+  // SMS opt-in (wired in Phase 11 — present from init per C-06)
+  smsOptedIn            Boolean   @default(false)
+  smsOptedOut           Boolean   @default(false)
+  smsOptedInAt          DateTime?
+  smsOptedOutAt         DateTime?
+
+  // Review requests (wired in Phase 9 — present from init per C-06)
+  lastReviewRequestedAt DateTime?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  jobs                  Job[]
+  preferredCleaner      Cleaner?  @relation(fields: [preferredCleanerId], references: [id])
+  invoices              Invoice[]
+  reviewRequests        ReviewRequest[]
+  communications        Communication[]
+
+  @@index([type])
+  @@index([active])
+  @@index([defaultZip])
+  @@index([createdAt])
+}
+
+// ─── Cleaner (C-07: colorIndex added) ────────────────────────────────────────
+model Cleaner {
+  id                    String          @id @default(cuid())
+
+  // Identity
+  name                  String
+  email                 String?
+  phone                 String?
+  dateHired             DateTime?
+
+  // Emergency contact
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  // Auth
+  pinHash               String
+  pinAttempts           Int             @default(0)
+  pinLockedUntil        DateTime?
+
+  // Compensation
+  hourlyRate            Float
+  payType               String          @default("hourly")
+
+  // Availability
+  availableDays         String[]
+
+  // Calendar color (C-07 — used in Phase 5)
+  colorIndex            Int             @default(0)
+
+  // Notes
+  internalNotes         String?
+
+  // Status
+  active                Boolean         @default(true)
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  // Relations
+  assignments           JobAssignment[]
+  preferredByClients    Client[]        // C-14: relation inferred from Client.preferredCleanerId
+
+  @@index([active])
+  @@index([createdAt])
+}
+
+// ─── Job ─────────────────────────────────────────────────────────────────────
+model Job {
+  id                String          @id @default(cuid())
+
+  clientId          String
+  client            Client          @relation(fields: [clientId], references: [id])
+
+  serviceAddress    String
+  serviceCity       String
+  serviceZip        String
+
+  scheduledAt       DateTime
+  estimatedHours    Float?
+
+  jobType           String          // standard | deep | move-out
+  notes             String?
+
+  // Financial
+  estimatedValue    Float?
+  actualRevenue     Float?
+  paymentMethod     String?
+  paymentNotes      String?
+
+  // Status: stand_by | scheduled | in_progress | completed | cancelled | bump | lock_out
+  status            String          @default("stand_by")
+
+  // Cancellation
+  cancelReason      String?
+  cancelledAt       DateTime?
+  cancellationType  String?
+  cancellationFee   Float?
+
+  // Recurring
+  recurringRule     String?
+  recurringGroupId  String?
+  isRecurringRoot   Boolean         @default(false)
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  assignments       JobAssignment[]
+  invoice           Invoice?
+  reviewRequests    ReviewRequest[]
+
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([clientId])
+  @@index([recurringGroupId])
+}
+
+// ─── JobAssignment ────────────────────────────────────────────────────────────
+model JobAssignment {
+  id                  String          @id @default(cuid())
+
+  jobId               String
+  job                 Job             @relation(fields: [jobId], references: [id])
+  cleanerId           String
+  cleaner             Cleaner         @relation(fields: [cleanerId], references: [id])
+
+  // Time clock
+  clockedInAt         DateTime?
+  clockedOutAt        DateTime?
+  durationMins        Int?
+
+  // Financial snapshot — immutable after clock-out
+  hourlyRateSnapshot  Float?
+  laborCost           Float?
+
+  // GPS
+  gpsLat              Float?
+  gpsLng              Float?
+  gpsBlocked          Boolean         @default(false)
+
+  locationPings       LocationPing[]
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@unique([jobId, cleanerId])
+  @@index([cleanerId])
+  @@index([jobId])
+  @@index([clockedInAt])
+}
+
+// ─── LocationPing ─────────────────────────────────────────────────────────────
+model LocationPing {
+  id            String        @id @default(cuid())
+  assignmentId  String
+  assignment    JobAssignment @relation(fields: [assignmentId], references: [id])
+  lat           Float
+  lng           Float
+  pingedAt      DateTime      @default(now())
+
+  @@index([assignmentId])
+  @@index([pingedAt])
+}
+
+// ─── Invoice (C-03: canonical full definition; C-15: "pending" not "pending_confirmation") ──
+model Invoice {
+  id                    String    @id @default(cuid())
+  invoiceNumber         String    @unique
+  jobId                 String    @unique
+  clientId              String
+
+  amount                Float
+  amountPaid            Float?
+  paymentType           String
+
+  // Status: draft | sent | pending | paid | overdue | voided | written_off
+  status                String    @default("draft")
+
+  invoiceDate           DateTime  @default(now())
+  dueDate               DateTime
+  sentAt                DateTime?
+  paidAt                DateTime?
+  voidedAt              DateTime?
+  overdueMarkedAt       DateTime?
+
+  paymentLinkClickedAt  DateTime?
+  manuallyConfirmedAt   DateTime?
+  manuallyConfirmedBy   String?
+
+  refundAmount          Float?
+  refundNotes           String?
+
+  // Write-off fields (Phase 7)
+  writtenOffAt          DateTime?
+  writtenOffBy          String?
+  writtenOffReason      String?
+
+  // Snapshot fields for resend change detection (Phase 7)
+  snapshotScheduledAt   DateTime?
+  snapshotAmount        Float?
+  snapshotAddress       String?
+
+  pdfUrl                String?
+
+  job                   Job             @relation(fields: [jobId], references: [id])
+  client                Client          @relation(fields: [clientId], references: [id])
+  partialPayments       PartialPayment[]
+
+  @@index([status])
+  @@index([clientId])
+  @@index([invoiceDate])
+  @@index([dueDate])
+}
+
+// ─── PartialPayment (Phase 7 stub) ───────────────────────────────────────────
+model PartialPayment {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  amount      Float
+  paidAt      DateTime
+  method      String
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  // TODO: partial payment UI and flow — stubbed
+  @@index([invoiceId])
+}
+
+// ─── GeocodedAddress (Phase 5b) ──────────────────────────────────────────────
+model GeocodedAddress {
+  id          String   @id @default(cuid())
+  addressKey  String   @unique
+  lat         Float
+  lng         Float
+  cachedAt    DateTime @default(now())
+
+  @@index([addressKey])
+}
+
+// ─── ReviewRequest (Phase 9) ──────────────────────────────────────────────────
+model ReviewRequest {
+  id              String    @id @default(cuid())
+  clientId        String?
+  client          Client?   @relation(fields: [clientId], references: [id])
+  jobId           String?
+  job             Job?      @relation(fields: [jobId], references: [id])
+
+  sentAt          DateTime?
+  sentViaEmail    Boolean   @default(false)
+  sentViaSms      Boolean   @default(false)
+
+  clickedAt       DateTime?
+  status          String    @default("queued")
+  // queued | sent | clicked | matched | skipped
+
+  googleReviewId  String?
+  matchedAt       DateTime?
+  matchedBy       String?
+
+  source          String?   // "organic" for public wall requests
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([clientId])
+  @@index([jobId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ─── GoogleReview (Phase 9) ───────────────────────────────────────────────────
+model GoogleReview {
+  id                  String    @id @default(cuid())
+  googleReviewId      String    @unique
+  authorName          String
+  rating              Int
+  text                String?
+  publishedAt         DateTime
+  pulledAt            DateTime  @default(now())
+
+  flagged             Boolean   @default(false)
+  flagAcknowledgedAt  DateTime?
+  flagAcknowledgedBy  String?
+
+  reviewRequestId     String?
+
+  @@index([rating])
+  @@index([publishedAt])
+  @@index([flagged])
+  @@index([reviewRequestId])
+}
+
+// ─── Communication (Phase 11) ─────────────────────────────────────────────────
+model Communication {
+  id              String    @id @default(cuid())
+  clientId        String?
+  client          Client?   @relation(fields: [clientId], references: [id])
+  leadId          String?
+
+  channel         String    // email | sms
+  direction       String    @default("outbound")
+  eventType       String
+  recipientName   String?
+  recipientEmail  String?
+  recipientPhone  String?
+
+  subject         String?
+  body            String?
+
+  status          String    @default("pending")
+  errorMessage    String?
+  externalId      String?
+
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([clientId])
+  @@index([leadId])
+  @@index([channel])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([status])
+}

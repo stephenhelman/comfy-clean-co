@@ -49,3 +49,5 @@ next-env.d.ts
 service-account*.json
 
 .claude
+
+/src/generated/prisma
