@@ -1,154 +1,168 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import { contactSchema } from "@/lib/schemas/contactSchema";
+import { NextRequest, NextResponse } from 'next/server'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
+import { leadSchema } from '@/lib/schemas/leadSchema'
+import { db } from '@/lib/db'
+import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(3, "1 h"),
-});
+  limiter: Ratelimit.slidingWindow(3, '1 h'),
+})
 
 export async function POST(req: NextRequest) {
-  // Parse body
-  let body: unknown;
+  let body: unknown
   try {
-    body = await req.json();
+    body = await req.json()
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  // Honeypot check — silent 200 for bots, no Upstash call wasted
+  // Honeypot — silent 200 for bots
   if ((body as Record<string, unknown>).website) {
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true }, { status: 200 })
   }
 
   // Rate limiting
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "anonymous";
-
-  const { success } = await ratelimit.limit(ip);
-  if (!success) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'anonymous'
+  const { success: ratePassed } = await ratelimit.limit(ip)
+  if (!ratePassed) {
     return NextResponse.json(
-      {
-        error:
-          "Too many requests. You can submit up to 3 messages per hour. Please try again later.",
-      },
+      { error: 'Too many submissions. Please try again later.' },
       { status: 429 }
-    );
+    )
   }
 
   // Zod validation
-  const result = contactSchema.safeParse(body);
+  const result = leadSchema.safeParse(body)
   if (!result.success) {
     return NextResponse.json(
-      {
-        error: "Validation failed",
-        fields: result.error.flatten().fieldErrors,
-      },
+      { error: 'Validation failed', fields: result.error.flatten().fieldErrors },
       { status: 400 }
-    );
+    )
   }
 
-  const { name, email, phone, service, message } = result.data;
-  const firstName = name.split(" ")[0];
-  const timestamp = new Date().toLocaleString("en-US", {
-    timeZone: "America/Denver",
-    dateStyle: "full",
-    timeStyle: "short",
-  });
+  const { name, email, phone, type, frequency, preferredDay, preferredTime, source, notes } = result.data
+
+  // Duplicate detection — check existing lead with same email or phone (not converted/lost)
+  const existingLead = await db.leadInquiry.findFirst({
+    where: {
+      OR: [{ email }, { phone }],
+      status: { notIn: ['converted', 'lost'] },
+    },
+  })
+
+  if (existingLead) {
+    const dupNote = `Duplicate submission received on ${new Date().toLocaleDateString('en-US')}.`
+    await db.leadInquiry.update({
+      where: { id: existingLead.id },
+      data: {
+        adminNotes: existingLead.adminNotes
+          ? `${existingLead.adminNotes}\n${dupNote}`
+          : dupNote,
+      },
+    })
+
+    await logActivity({
+      eventType: ACTIVITY_EVENTS.LEAD_DUPLICATE,
+      description: `Duplicate submission from ${name} — existing lead updated`,
+      linkPath: `/leads/${existingLead.id}`,
+    })
+
+    await sendAdminNotification({ name, email, phone, type, frequency, preferredDay, preferredTime, source, notes, isDuplicate: true, leadId: existingLead.id })
+
+    return NextResponse.json({ ok: true })
+  }
+
+  // Check if they match an existing client
+  const existingClient = await db.client.findFirst({
+    where: { OR: [{ email }, { phone }], active: true },
+    select: { id: true, name: true },
+  })
+
+  // Create LeadInquiry record
+  const lead = await db.leadInquiry.create({
+    data: {
+      name,
+      email,
+      phone,
+      type,
+      frequency,
+      preferredDay: preferredDay ?? null,
+      preferredTime: preferredTime ?? null,
+      source: source ?? null,
+      notes: notes ?? null,
+      status: 'new',
+      // If existing client match, flag in adminNotes
+      adminNotes: existingClient
+        ? `⚠️ This contact matches existing client: ${existingClient.name} (/clients/${existingClient.id})`
+        : null,
+    },
+  })
+
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.LEAD_SUBMITTED,
+    description: `New ${type} lead from ${name}`,
+    linkPath: `/leads/${lead.id}`,
+  })
+
+  await sendAdminNotification({ name, email, phone, type, frequency, preferredDay, preferredTime, source, notes, isDuplicate: false, leadId: lead.id })
+
+  return NextResponse.json({ ok: true })
+}
+
+async function sendAdminNotification(data: {
+  name: string; email: string; phone: string; type: string; frequency: string
+  preferredDay?: string; preferredTime?: string; source?: string; notes?: string
+  isDuplicate: boolean; leadId: string
+}) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const { Resend } = await import('resend')
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const adminEmail = process.env.EMAIL_INFO ?? 'info@comfycleanco.com'
+  const fromEmail = process.env.EMAIL_NOREPLY ?? 'noreply@comfycleanco.com'
+  const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL ?? 'https://admin.comfycleanco.com'
+
+  const typeLabel = data.type === 'residential' ? 'Residential' : 'Commercial'
+  const subject = data.isDuplicate
+    ? `Duplicate Lead Submission — ${data.name}`
+    : `New ${typeLabel} Lead — ${data.name}`
+
+  const rows = [
+    ['Name', data.name],
+    ['Phone', data.phone],
+    ['Email', data.email],
+    ['Type', typeLabel],
+    ['Frequency', data.frequency === 'one-time' ? 'One-Time' : 'Recurring'],
+    data.preferredDay ? ['Preferred Day', data.preferredDay] : null,
+    data.preferredTime ? ['Preferred Time', data.preferredTime] : null,
+    data.source ? ['Source', data.source] : null,
+    data.notes ? ['Notes', data.notes] : null,
+  ].filter(Boolean) as [string, string][]
+
+  const tableRows = rows.map(([label, value]) =>
+    `<tr><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;width:120px;">${label}</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#0f172a;font-size:14px;">${value}</td></tr>`
+  ).join('')
 
   try {
-    const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const contactEmail = process.env.EMAIL_INFO ?? "info@comfycleanco.com";
-    const fromEmail = process.env.EMAIL_NOREPLY ?? "noreply@comfycleanco.com";
-
-    await Promise.all([
-      // Owner notification
-      resend.emails.send({
-        from: fromEmail,
-        to: contactEmail,
-        subject: "New Contact Inquiry — Comfy Clean Co",
-        html: `
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
+    await resend.emails.send({
+      from: fromEmail,
+      to: adminEmail,
+      subject,
+      html: `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="background:#f9fafb;font-family:Arial,sans-serif;margin:0;padding:0;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;padding:40px 20px;">
-    <tr><td style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:40px;">
-      <h1 style="color:#0f172a;font-size:22px;margin-top:0;">New Lead: ${name}</h1>
-      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-        <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;width:120px;">Name</td>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#0f172a;font-size:14px;font-weight:bold;">${name}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Email</td>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#0f172a;font-size:14px;">${email}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Phone</td>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#0f172a;font-size:14px;">${phone}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Service</td>
-          <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#0f172a;font-size:14px;">${service}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 0;color:#6b7280;font-size:13px;vertical-align:top;">Message</td>
-          <td style="padding:10px 0;color:#0f172a;font-size:14px;line-height:1.6;">${message.replace(/\n/g, "<br>")}</td>
-        </tr>
-      </table>
-      <p style="color:#9ca3af;font-size:12px;margin-top:32px;margin-bottom:0;">Received ${timestamp} (MT)</p>
-    </td></tr>
-  </table>
-</body>
-</html>`,
-      }),
-
-      // Customer confirmation
-      resend.emails.send({
-        from: fromEmail,
-        to: email,
-        subject: "We received your message — Comfy Clean Co",
-        html: `
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
-<body style="background:#f9fafb;font-family:Arial,sans-serif;margin:0;padding:0;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;padding:40px 20px;">
-    <tr><td style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:40px;">
-      <h1 style="color:#0f172a;font-size:22px;margin-top:0;">Hi ${firstName}, we got your message!</h1>
-      <p style="color:#374151;font-size:16px;line-height:1.7;">
-        Thank you for reaching out to <strong>Comfy Clean Co.</strong> We've received your inquiry and a member of our team will be in touch with you within <strong>24 hours</strong>.
-      </p>
-      <div style="background:#f0fdf4;border-left:3px solid #22c55e;padding:20px;margin:24px 0;border-radius:4px;">
-        <p style="color:#374151;font-size:14px;margin:0 0 6px 0;"><strong>Service Requested:</strong> ${service}</p>
-        <p style="color:#374151;font-size:14px;margin:0;"><strong>Your Message:</strong> ${message.replace(/\n/g, "<br>")}</p>
-      </div>
-      <p style="color:#374151;font-size:16px;line-height:1.7;">
-        In the meantime, feel free to call or text us directly at <strong style="color:#16a34a;">915-979-5151</strong> — we're happy to chat.
-      </p>
-      <p style="color:#374151;font-size:16px;line-height:1.7;margin-bottom:0;">
-        Talk soon,<br>
-        <strong>The Comfy Clean Co. Team</strong>
-      </p>
-    </td></tr>
-    <tr><td style="text-align:center;padding-top:24px;">
-      <p style="color:#9ca3af;font-size:12px;margin:0;">Comfy Clean Co. · Far East El Paso, TX · Clean · Fresh · Reliable</p>
-    </td></tr>
-  </table>
-</body>
-</html>`,
-      }),
-    ]);
-
-    return NextResponse.json({ ok: true });
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;padding:40px 20px;">
+<tr><td style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:40px;">
+${data.isDuplicate ? '<p style="color:#d97706;background:#fffbeb;border:1px solid #fcd34d;padding:12px;border-radius:6px;margin:0 0 20px;font-size:13px;">⚠️ Duplicate submission — existing lead was updated</p>' : ''}
+<h1 style="color:#0f172a;font-size:20px;margin-top:0;">${data.isDuplicate ? 'Duplicate Lead' : 'New Lead'}: ${data.name}</h1>
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${tableRows}</table>
+<div style="margin-top:24px;">
+<a href="${adminUrl}/leads/${data.leadId}" style="display:inline-block;background:#2B5C78;color:#ffffff;padding:10px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:bold;">View Lead in Admin</a>
+</div>
+</td></tr></table></body></html>`,
+    })
   } catch (err) {
-    console.error("contact route error:", err);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again or call us directly." },
-      { status: 500 }
-    );
+    console.error('Lead notification email failed:', err)
   }
 }
