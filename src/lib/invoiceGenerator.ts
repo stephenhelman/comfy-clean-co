@@ -232,6 +232,65 @@ export async function resendInvoiceEmail(jobId: string) {
   })
 }
 
+// C-21: When Phase 11 is built, replace this with sendEmail() from lib/communications/sendEmail.ts
+// TODO Phase 11: replace with sendEmail({ eventType: COMM_EVENT_TYPES.PAYMENT_RECEIPT, ... })
+export async function sendPaidReceipt(invoiceId: string) {
+  if (!process.env.RESEND_API_KEY) return
+  const { Resend } = await import('resend')
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
+  const invoice = await db.invoice.findUnique({
+    where: { id: invoiceId },
+    include: {
+      job: { select: { scheduledAt: true, jobType: true, serviceAddress: true, serviceCity: true } },
+      client: { select: { name: true, email: true } },
+    },
+  })
+  if (!invoice || !invoice.client.email) return
+
+  const fromEmail = process.env.EMAIL_NOREPLY ?? 'noreply@comfycleanco.com'
+  const amountPaid = invoice.amountPaid ?? invoice.amount
+  const dateStr = format(new Date(invoice.job.scheduledAt), 'EEEE, MMMM d, yyyy')
+  const subject = `Payment Received — ${invoice.invoiceNumber}`
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="background:#F9FAFB;font-family:Arial,sans-serif;margin:0;padding:0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;padding:32px 20px;">
+    <tr><td style="text-align:center;padding-bottom:24px;">
+      <h2 style="color:#2B5C78;font-size:22px;margin:0;">Comfy Clean Co.</h2>
+    </td></tr>
+    <tr><td style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:8px;padding:32px;">
+      <h1 style="color:#10B981;font-size:22px;margin-top:0;">✓ Payment Received</h1>
+      <p style="color:#374151;">Hi ${invoice.client.name}, we've received your payment. Thank you!</p>
+      <div style="background:#F0FDF4;border-left:4px solid #10B981;padding:16px;margin:20px 0;border-radius:4px;">
+        <p style="margin:4px 0;"><strong>Invoice:</strong> ${invoice.invoiceNumber}</p>
+        <p style="margin:4px 0;"><strong>Service Date:</strong> ${dateStr}</p>
+        <p style="margin:4px 0;"><strong>Amount Paid:</strong> $${amountPaid.toFixed(2)}</p>
+        <p style="margin:4px 0;"><strong>Payment Method:</strong> ${invoice.paymentType}</p>
+      </div>
+      <p style="color:#374151;">We appreciate your business and look forward to serving you again!</p>
+      <p style="color:#6B7280;font-size:12px;border-top:1px solid #E5E7EB;padding-top:16px;margin-bottom:0;">
+        Comfy Clean Co. · Far East El Paso, TX · comfycleanco.com
+      </p>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  try {
+    await resend.emails.send({ from: fromEmail, to: invoice.client.email, subject, html })
+    await logActivity({
+      eventType: ACTIVITY_EVENTS.RECEIPT_SENT,
+      description: `Receipt sent to ${invoice.client.name} for ${invoice.invoiceNumber}`,
+      linkPath: `/invoices`,
+    })
+  } catch (_) {
+    // Non-blocking
+  }
+}
+
 export async function sendAppointmentConfirmation(jobId: string) {
   const job = await db.job.findUnique({
     where: { id: jobId },
