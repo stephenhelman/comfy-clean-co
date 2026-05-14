@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
+import { handleFinalClockOut } from '@/lib/jobs/clockOut'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 
@@ -305,16 +306,7 @@ export async function editClockOut(
     data: { clockedOutAt: clockOut, durationMins, hourlyRateSnapshot, laborCost },
   })
 
-  // If all cleaners on the job are now clocked out, mark job completed
-  const openAssignments = await db.jobAssignment.count({
-    where: { jobId: assignment.jobId, clockedOutAt: null, clockedInAt: { not: null } },
-  })
-  if (openAssignments === 0) {
-    await db.job.update({
-      where: { id: assignment.jobId },
-      data: { status: 'completed' },
-    })
-  }
+  await handleFinalClockOut(assignment.jobId)
 
   const address = [assignment.job.serviceAddress, assignment.job.serviceCity]
     .filter(Boolean)
