@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
 import { generateInvoice, resendInvoiceEmail, sendAppointmentConfirmation } from '@/lib/invoiceGenerator'
+import { isAutomationEnabled } from '@/lib/automations/checkAutomation'
 import { z } from 'zod'
 import { format, addWeeks, addMonths, isBefore } from 'date-fns'
 import { randomBytes } from 'crypto'
@@ -124,8 +125,10 @@ export async function createJob(formData: FormData) {
 
     if (i === 0) firstJob = job
 
-    // Auto-generate invoice for each instance
-    await generateInvoice(job.id)
+    // Auto-generate invoice for each instance (skipped if financialAutomations.invoiceGeneration is off)
+    if (await isAutomationEnabled('financialAutomations', 'invoiceGeneration')) {
+      await generateInvoice(job.id)
+    }
   }
 
   await logActivity({
@@ -482,7 +485,9 @@ export async function bumpJob(jobId: string, newDate: string) {
     },
   })
 
-  await generateInvoice(newJob.id)
+  if (await isAutomationEnabled('financialAutomations', 'invoiceGeneration')) {
+    await generateInvoice(newJob.id)
+  }
 
   await logActivity({
     eventType: ACTIVITY_EVENTS.JOB_BUMPED,

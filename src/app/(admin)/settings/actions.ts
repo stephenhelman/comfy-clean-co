@@ -188,6 +188,47 @@ export async function saveReviewSettings(formData: FormData) {
   revalidatePath('/settings')
 }
 
+export async function saveAutomationSettings(automationSettings: object, appointmentReminderHour: number) {
+  const session = await getSession()
+  const settings = await getOrCreateSettings()
+
+  await db.businessSettings.update({
+    where: { id: settings.id },
+    data: {
+      automationSettings,
+      appointmentReminderHour,
+      updatedBy: session.user.name ?? 'Admin',
+    },
+  })
+
+  // Log global pause transitions
+  const prev = settings.automationSettings as { globalPause?: boolean } | null
+  const next = automationSettings as { globalPause?: boolean }
+  if (prev?.globalPause !== next?.globalPause) {
+    await logActivity({
+      eventType: next?.globalPause
+        ? ACTIVITY_EVENTS.GLOBAL_PAUSE_ENABLED
+        : ACTIVITY_EVENTS.GLOBAL_PAUSE_DISABLED,
+      description: next?.globalPause
+        ? 'Global pause enabled — client communications paused'
+        : 'Global pause disabled — automations resumed',
+      linkPath: '/settings',
+      actorName: session.user.name ?? undefined,
+      actorId: session.user.id,
+    })
+  } else {
+    await logActivity({
+      eventType: ACTIVITY_EVENTS.AUTOMATION_TOGGLED,
+      description: 'Automation settings updated',
+      linkPath: '/settings',
+      actorName: session.user.name ?? undefined,
+      actorId: session.user.id,
+    })
+  }
+
+  revalidatePath('/settings')
+}
+
 export async function saveNotifications(formData: FormData) {
   const session = await getSession()
   const settings = await getOrCreateSettings()

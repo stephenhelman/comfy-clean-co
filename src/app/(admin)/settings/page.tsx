@@ -41,6 +41,8 @@ export default async function SettingsPage() {
     reviewCooldownDays: settings.reviewCooldownDays,
     adminNotificationEmail: settings.adminNotificationEmail,
     adminNotificationPhone: settings.adminNotificationPhone,
+    automationSettings: settings.automationSettings as object,
+    appointmentReminderHour: settings.appointmentReminderHour,
     updatedBy: settings.updatedBy,
   }
 

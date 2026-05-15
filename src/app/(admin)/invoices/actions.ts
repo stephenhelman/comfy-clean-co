@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
 import { sendPaidReceipt } from '@/lib/invoiceGenerator'
+import { checkAndQueueReviewRequest } from '@/lib/automations/reviewRequestQueue'
 
 async function getSession() {
   const session = await auth()
@@ -52,6 +53,11 @@ export async function markInvoicePaid(
 
   // Non-blocking receipt
   void sendPaidReceipt(invoiceId)
+
+  // Queue review request if eligible (respects automation toggle + cooldown)
+  void checkAndQueueReviewRequest(invoice.jobId).catch(
+    (err: unknown) => console.error('Review request queue failed:', err),
+  )
 
   revalidatePath('/invoices')
   revalidatePath(`/jobs/${invoice.jobId}`)

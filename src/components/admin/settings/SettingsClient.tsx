@@ -7,9 +7,10 @@ import {
   saveBusinessInfo, saveBranding, saveScheduling,
   addBlackoutDate, removeBlackoutDate,
   saveInvoicing, saveReviewSettings, saveNotifications,
+  saveAutomationSettings,
 } from '@/app/(admin)/settings/actions'
 
-type Tab = 'business' | 'scheduling' | 'invoicing' | 'reviews' | 'notifications'
+type Tab = 'business' | 'scheduling' | 'invoicing' | 'reviews' | 'notifications' | 'automations'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'business', label: 'Business & Branding' },
@@ -17,6 +18,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'invoicing', label: 'Invoicing & Payment' },
   { key: 'reviews', label: 'Reviews' },
   { key: 'notifications', label: 'Notifications' },
+  { key: 'automations', label: 'Automations' },
 ]
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => {
@@ -64,6 +66,13 @@ function Input({ name, defaultValue, type = 'text', placeholder, className = '' 
   )
 }
 
+interface AutomationSettings {
+  globalPause?: boolean
+  clientCommunications?: { enabled?: boolean; appointmentReminder?: boolean; cleanerOnTheWay?: boolean; reviewRequest?: boolean }
+  adminAlerts?: { enabled?: boolean; staleLead?: boolean; overdueInvoice?: boolean; openClockEntry?: boolean; capacityWarning?: boolean; negativeReview?: boolean; pinLocked?: boolean; newLead?: boolean }
+  financialAutomations?: { enabled?: boolean; invoiceGeneration?: boolean; overdueTransition?: boolean }
+}
+
 interface SettingsData {
   id: string
   businessName: string
@@ -93,6 +102,8 @@ interface SettingsData {
   reviewCooldownDays: number
   adminNotificationEmail: string | null
   adminNotificationPhone: string | null
+  automationSettings: object
+  appointmentReminderHour: number
   updatedBy: string | null
 }
 
@@ -127,12 +138,40 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
   const [newBlackout, setNewBlackout] = useState('')
   const [blackoutPending, startBlackoutTransition] = useTransition()
 
+  const defaultAuto = settings.automationSettings as AutomationSettings
+  const [autoSettings, setAutoSettings] = useState<AutomationSettings>(defaultAuto)
+  const [autoReminderHour, setAutoReminderHour] = useState<number>(settings.appointmentReminderHour)
+  const [autoPending, startAutoTransition] = useTransition()
+  const [autoSaved, setAutoSaved] = useState(false)
+  const [autoError, setAutoError] = useState('')
+
   const business = useFormSave(saveBusinessInfo)
   const branding = useFormSave(saveBranding)
   const scheduling = useFormSave(saveScheduling)
   const invoicing = useFormSave(saveInvoicing)
   const reviews = useFormSave(saveReviewSettings)
   const notifications = useFormSave(saveNotifications)
+
+  function handleAutoSave() {
+    setAutoSaved(false)
+    setAutoError('')
+    startAutoTransition(async () => {
+      try {
+        await saveAutomationSettings(autoSettings, autoReminderHour)
+        setAutoSaved(true)
+        setTimeout(() => setAutoSaved(false), 3000)
+      } catch (err) {
+        setAutoError(err instanceof Error ? err.message : 'Save failed')
+      }
+    })
+  }
+
+  function setAutoGroup<G extends keyof AutomationSettings>(group: G, key: string, value: boolean) {
+    setAutoSettings(prev => ({
+      ...prev,
+      [group]: { ...(prev[group] as Record<string, unknown> ?? {}), [key]: value },
+    }))
+  }
 
   function handleAddBlackout() {
     if (!newBlackout) return
@@ -434,7 +473,7 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
                   <Input name="adminNotificationEmail" type="email" defaultValue={settings.adminNotificationEmail}
                     placeholder="alerts@comfycleanco.com" />
                 </Field>
-                <Field label="Notification Phone" hint="Used for SMS alerts when Twilio is connected (Phase 11).">
+                <Field label="Notification Phone" hint="Used for SMS alerts when Twilio is connected.">
                   <Input name="adminNotificationPhone" type="tel" defaultValue={settings.adminNotificationPhone}
                     placeholder="+19155550100" />
                 </Field>
@@ -446,23 +485,23 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
                   <div>
                     <p className="text-sm font-medium text-gray-900">Google My Business</p>
-                    <p className="text-xs text-gray-500">Sync reviews automatically</p>
+                    <p className="text-xs text-gray-500">Sync reviews automatically via daily cron</p>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">Phase 13</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">Active</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
                   <div>
                     <p className="text-sm font-medium text-gray-900">Twilio (SMS)</p>
                     <p className="text-xs text-gray-500">SMS client communications</p>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">Phase 11</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">Active</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <p className="text-sm font-medium text-gray-900">GoHighLevel</p>
                     <p className="text-xs text-gray-500">CRM automation</p>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">Phase 13</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">Not connected</span>
                 </div>
               </div>
             </Section>
@@ -472,6 +511,128 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
               <SaveButton isPending={notifications.isPending} saved={notifications.saved} />
             </div>
           </form>
+        )}
+
+        {/* ── Automations ──────────────────────────────────────────────────────── */}
+        {tab === 'automations' && (
+          <div className="space-y-5">
+
+            {/* Global Pause */}
+            <div className={`rounded-xl border-2 p-4 flex items-start gap-4 ${autoSettings.globalPause ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'}`}>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900">Global Pause</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Pauses all <strong>client-facing</strong> communications — appointment reminders, review requests, and cleaner on-the-way texts. Admin alerts and financial automations continue running.
+                </p>
+              </div>
+              <button type="button"
+                onClick={() => setAutoSettings(prev => ({ ...prev, globalPause: !prev.globalPause }))}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${autoSettings.globalPause ? 'bg-red-500' : 'bg-gray-200'}`}>
+                <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${autoSettings.globalPause ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+
+            {/* Client Communications */}
+            <Section title="Client Communications">
+              <div className="space-y-3">
+                {[
+                  { key: 'appointmentReminder', label: 'Appointment Reminders', hint: 'Send reminder SMS/email the evening before each appointment.' },
+                  { key: 'cleanerOnTheWay', label: 'Cleaner On The Way', hint: 'Alert client when cleaner clocks in. (Requires cleaner portal.)' },
+                  { key: 'reviewRequest', label: 'Review Requests', hint: 'Queue review request when a job is marked paid.' },
+                ].map(({ key, label, hint }) => (
+                  <div key={key} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <button type="button"
+                      onClick={() => setAutoGroup('clientCommunications', key, (autoSettings.clientCommunications as Record<string, boolean> | undefined)?.[key] === false)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors mt-0.5 ${(autoSettings.clientCommunications as Record<string, boolean> | undefined)?.[key] !== false ? 'bg-brand-navy' : 'bg-gray-200'}`}>
+                      <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${(autoSettings.clientCommunications as Record<string, boolean> | undefined)?.[key] !== false ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{label}</p>
+                      <p className="text-xs text-gray-500">{hint}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            {/* Appointment Reminder Hour — C-34 warning */}
+            <Section title="Appointment Reminder Schedule">
+              <Field
+                label="Send Hour"
+                hint="Hour of day to send appointment reminder emails/SMS (daily cron). Default: 6 PM."
+              >
+                <div className="space-y-2">
+                  <select value={autoReminderHour} onChange={e => setAutoReminderHour(Number(e.target.value))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+                    {HOUR_OPTIONS.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
+                  </select>
+                  {/* C-34: Vercel cron schedule is static */}
+                  <div className="flex items-start gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-700">
+                      Changing this time requires a code deployment to take effect. The Vercel cron schedule is a static string and cannot read from the database at runtime.
+                    </p>
+                  </div>
+                </div>
+              </Field>
+            </Section>
+
+            {/* Admin Alerts */}
+            <Section title="Admin Alerts">
+              <div className="space-y-3">
+                {[
+                  { key: 'newLead', label: 'New Lead Alert', hint: 'SMS when a new lead is submitted via the contact form.' },
+                  { key: 'staleLead', label: 'Stale Lead Alert', hint: 'Nightly alert for leads with no contact within the threshold.' },
+                  { key: 'overdueInvoice', label: 'Overdue Invoice Alert', hint: 'Nightly alert for overdue invoices.' },
+                  { key: 'openClockEntry', label: 'Open Clock Entry Alert', hint: 'Alert when a cleaner never clocked out.' },
+                  { key: 'negativeReview', label: 'Negative Review Alert', hint: 'Alert when a new ≤3-star Google review is detected.' },
+                  { key: 'capacityWarning', label: 'Capacity Warning', hint: 'Alert when tomorrow is at ≥90% booking capacity.' },
+                ].map(({ key, label, hint }) => (
+                  <div key={key} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <button type="button"
+                      onClick={() => setAutoGroup('adminAlerts', key, (autoSettings.adminAlerts as Record<string, boolean> | undefined)?.[key] === false)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors mt-0.5 ${(autoSettings.adminAlerts as Record<string, boolean> | undefined)?.[key] !== false ? 'bg-brand-navy' : 'bg-gray-200'}`}>
+                      <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${(autoSettings.adminAlerts as Record<string, boolean> | undefined)?.[key] !== false ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{label}</p>
+                      <p className="text-xs text-gray-500">{hint}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            {/* Financial Automations */}
+            <Section title="Financial Automations">
+              <div className="space-y-3">
+                {[
+                  { key: 'invoiceGeneration', label: 'Auto-Generate Invoice', hint: 'Create and send invoice automatically when a job is created.' },
+                  { key: 'overdueTransition', label: 'Auto-Overdue Transition', hint: 'Mark invoice overdue when all cleaners clock out and due date has passed.' },
+                ].map(({ key, label, hint }) => (
+                  <div key={key} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <button type="button"
+                      onClick={() => setAutoGroup('financialAutomations', key, (autoSettings.financialAutomations as Record<string, boolean> | undefined)?.[key] === false)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors mt-0.5 ${(autoSettings.financialAutomations as Record<string, boolean> | undefined)?.[key] !== false ? 'bg-brand-navy' : 'bg-gray-200'}`}>
+                      <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${(autoSettings.financialAutomations as Record<string, boolean> | undefined)?.[key] !== false ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{label}</p>
+                      <p className="text-xs text-gray-500">{hint}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            {autoError && <p className="text-sm text-red-600">{autoError}</p>}
+            <div className="flex justify-end">
+              <button type="button" onClick={handleAutoSave} disabled={autoPending}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm bg-brand-navy text-white rounded-lg hover:bg-brand-navy/90 disabled:opacity-50">
+                {autoPending ? 'Saving…' : autoSaved ? <><CheckCircle className="w-4 h-4" />Saved</> : 'Save Changes'}
+              </button>
+            </div>
+          </div>
         )}
 
       </div>

@@ -6,6 +6,7 @@ import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
 import { sendSms } from '@/lib/communications/sendSms'
 import { COMM_EVENT_TYPES, SMS_TEMPLATES } from '@/lib/communications/templates'
+import { isAutomationEnabled } from '@/lib/automations/checkAutomation'
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -127,9 +128,12 @@ export async function POST(req: NextRequest) {
     ).catch((err: unknown) => console.error('Opt-in SMS failed:', err))
   }
 
-  // Phase 11: Admin new lead SMS alert
-  const settings = await db.businessSettings.findFirst({ select: { adminNotificationPhone: true } })
-  if (settings?.adminNotificationPhone) {
+  // Admin new lead SMS alert — respects adminAlerts.newLead toggle
+  const [newLeadEnabled, settings] = await Promise.all([
+    isAutomationEnabled('adminAlerts', 'newLead'),
+    db.businessSettings.findFirst({ select: { adminNotificationPhone: true } }),
+  ])
+  if (newLeadEnabled && settings?.adminNotificationPhone) {
     void sendSms({
       to: settings.adminNotificationPhone,
       body: SMS_TEMPLATES.ADMIN_NEW_LEAD({ name, phone, type }),
