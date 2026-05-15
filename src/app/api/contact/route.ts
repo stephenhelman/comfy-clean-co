@@ -4,6 +4,8 @@ import { Redis } from '@upstash/redis'
 import { leadSchema } from '@/lib/schemas/leadSchema'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
+import { sendSms } from '@/lib/communications/sendSms'
+import { COMM_EVENT_TYPES, SMS_TEMPLATES } from '@/lib/communications/templates'
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -107,6 +109,35 @@ export async function POST(req: NextRequest) {
   })
 
   await sendAdminNotification({ name, email, phone, type, frequency, preferredDay, preferredTime, source, notes, isDuplicate: false, leadId: lead.id })
+
+  // Phase 11: Send SMS opt-in when phone is present
+  if (phone) {
+    void sendSms({
+      to: phone,
+      body: SMS_TEMPLATES.OPT_IN(),
+      eventType: COMM_EVENT_TYPES.SMS_OPT_IN,
+      recipientName: name,
+      leadId: lead.id,
+      skipOptInCheck: true,
+    }).then(() =>
+      db.leadInquiry.update({
+        where: { id: lead.id },
+        data: { smsOptInSent: true, smsOptInSentAt: new Date() },
+      })
+    ).catch((err: unknown) => console.error('Opt-in SMS failed:', err))
+  }
+
+  // Phase 11: Admin new lead SMS alert
+  const settings = await db.businessSettings.findFirst({ select: { adminNotificationPhone: true } })
+  if (settings?.adminNotificationPhone) {
+    void sendSms({
+      to: settings.adminNotificationPhone,
+      body: SMS_TEMPLATES.ADMIN_NEW_LEAD({ name, phone, type }),
+      eventType: COMM_EVENT_TYPES.ADMIN_NEW_LEAD,
+      recipientName: 'Admin',
+      skipOptInCheck: true,
+    }).catch((err: unknown) => console.error('Admin new lead SMS failed:', err))
+  }
 
   return NextResponse.json({ ok: true })
 }

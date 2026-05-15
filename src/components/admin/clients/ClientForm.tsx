@@ -124,11 +124,20 @@ export default function ClientForm({ client, cleaners }: Props) {
   const [preferredTime, setPreferredTime] = useState(client?.preferredTime ?? '')
   const [payMethod, setPayMethod] = useState(client?.preferredPaymentMethod ?? '')
   const [acqSource, setAcqSource] = useState(client?.acquisitionSource ?? '')
+  const [phone, setPhone] = useState(client?.phone ?? '')
+  const [smsChoice, setSmsChoice] = useState('')
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
 
   async function handleSubmit(formData: FormData) {
     setError('')
+
+    // Validate SMS choice when phone is present and creating new client
+    if (!isEdit && phone && !smsChoice) {
+      setError('Please select an SMS communication preference.')
+      return
+    }
+
     setPending(true)
     try {
       if (isEdit) {
@@ -175,7 +184,13 @@ export default function ClientForm({ client, cleaners }: Props) {
           </div>
           <div>
             <label className={labelCls}>Phone</label>
-            <input name="phone" defaultValue={client?.phone ?? ''} className={inputCls} placeholder="(915) 555-0100" />
+            <input
+              name="phone"
+              value={phone}
+              onChange={e => { setPhone(e.target.value); if (!isEdit) setSmsChoice('') }}
+              className={inputCls}
+              placeholder="(915) 555-0100"
+            />
           </div>
           {type === 'commercial' && (
             <div>
@@ -207,6 +222,58 @@ export default function ClientForm({ client, cleaners }: Props) {
               <label className={labelCls}>Phone</label>
               <input name="secondaryContactPhone" defaultValue={client?.secondaryContactPhone ?? ''} className={inputCls} />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* SMS Opt-In Control — new clients only, shown when phone is present */}
+      {!isEdit && phone && (
+        <div className={sectionCls}>
+          <h2 className={sectionHeadCls}>
+            SMS Communications <span className="text-red-500">*</span>
+          </h2>
+          <p className="text-xs text-gray-500 -mt-2">Required when a phone number is provided.</p>
+          <input type="hidden" name="smsChoice" value={smsChoice} />
+          <div className="space-y-3">
+            {[
+              {
+                value: 'send_now',
+                label: 'Send opt-in text now',
+                description: "We'll text them asking to confirm. They reply YES to start receiving updates.",
+              },
+              {
+                value: 'verbal',
+                label: 'Already confirmed verbally',
+                description: "They agreed on the call or in person. We'll skip the opt-in text and add them directly.",
+              },
+              {
+                value: 'email_only',
+                label: 'Email only',
+                description: "Don't send any SMS to this contact. They can be opted in later from their profile.",
+              },
+            ].map(opt => (
+              <label
+                key={opt.value}
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  smsChoice === opt.value
+                    ? 'border-brand-navy bg-brand-navy/5'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="smsChoiceRadio"
+                  value={opt.value}
+                  checked={smsChoice === opt.value}
+                  onChange={() => setSmsChoice(opt.value)}
+                  className="mt-0.5 accent-brand-navy"
+                />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{opt.label}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{opt.description}</p>
+                </div>
+              </label>
+            ))}
           </div>
         </div>
       )}

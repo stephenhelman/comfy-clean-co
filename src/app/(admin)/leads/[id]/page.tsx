@@ -5,6 +5,13 @@ import { ArrowLeft } from 'lucide-react'
 import { db } from '@/lib/db'
 import LeadActions from '@/components/admin/leads/LeadActions'
 import AdminNotesEditor from '@/components/admin/leads/AdminNotesEditor'
+import SmsOptInPanel from '@/components/admin/communications/SmsOptInPanel'
+import {
+  leadSendOptIn,
+  leadMarkVerbalOptIn,
+  leadMarkOptedOut,
+  leadOverrideOptOut,
+} from '@/app/(admin)/leads/actions'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -161,6 +168,26 @@ export default async function LeadDetailPage({ params }: Props) {
               clientId: lead.clientId,
             }} />
           </div>
+
+          {/* SMS Opt-In Panel */}
+          <SmsOptInPanel
+            id={lead.id}
+            name={lead.name}
+            phone={lead.phone}
+            smsOptedIn={lead.smsOptedIn}
+            smsOptedOut={lead.smsOptedOut}
+            smsOptInSent={lead.smsOptInSent}
+            smsOptedInAt={lead.smsOptedInAt?.toISOString() ?? null}
+            smsOptedOutAt={lead.smsOptedOutAt?.toISOString() ?? null}
+            smsOptInSentAt={lead.smsOptInSentAt?.toISOString() ?? null}
+            actions={{
+              kind: 'lead',
+              sendOptIn: leadSendOptIn,
+              markVerbal: leadMarkVerbalOptIn,
+              markOptedOut: leadMarkOptedOut,
+              overrideOptOut: leadOverrideOptOut,
+            }}
+          />
         </div>
       </div>
     </div>

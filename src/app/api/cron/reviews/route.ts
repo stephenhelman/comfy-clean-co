@@ -3,6 +3,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
+import { sendSms } from '@/lib/communications/sendSms'
+import { COMM_EVENT_TYPES, SMS_TEMPLATES } from '@/lib/communications/templates'
 
 async function sendReviewEmail(params: {
   to: string
@@ -49,7 +51,13 @@ export async function GET(req: NextRequest) {
   }
 
   const settings = await db.businessSettings.findFirst({
-    select: { reviewRequestHour: true, reviewRequestSkipWeekends: true, reviewCooldownDays: true },
+    select: {
+      reviewRequestHour: true,
+      reviewRequestSkipWeekends: true,
+      reviewCooldownDays: true,
+      adminNotificationPhone: true,
+      googlePlaceId: true,
+    },
   })
 
   const now = new Date()
@@ -61,29 +69,61 @@ export async function GET(req: NextRequest) {
   // Find all queued requests with a client email
   const queued = await db.reviewRequest.findMany({
     where: { status: 'queued' },
-    include: { client: { select: { id: true, name: true, email: true } } },
+    include: {
+      client: {
+        select: { id: true, name: true, email: true, phone: true, smsOptedIn: true, smsOptedOut: true },
+      },
+      job: { select: { scheduledAt: true } },
+    },
   })
 
   let sent = 0
   let skipped = 0
 
   for (const request of queued) {
-    if (!request.client?.email) { skipped++; continue }
+    if (!request.client?.email && !request.client?.phone) { skipped++; continue }
 
     // C-24: SINGULAR review. subdomain
     const reviewUrl = `https://review.comfycleanco.com/${request.id}`
+    const jobDate = request.job?.scheduledAt
+      ? new Date(request.job.scheduledAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : 'your recent'
 
     try {
-      await sendReviewEmail({
-        to: request.client.email,
-        clientName: request.client.name,
-        reviewUrl,
-      })
+      if (request.client?.email) {
+        await sendReviewEmail({
+          to: request.client.email,
+          clientName: request.client.name,
+          reviewUrl,
+        })
+      }
+
+      // Phase 11: Review request SMS — C-28: review.comfycleanco.com (singular)
+      let sentViaSms = false
+      if (request.client?.phone && request.client.smsOptedIn && !request.client.smsOptedOut) {
+        await sendSms({
+          to: request.client.phone,
+          body: SMS_TEMPLATES.REVIEW_REQUEST({
+            firstName: request.client.name.split(' ')[0],
+            date: jobDate,
+            reviewLink: reviewUrl,
+          }),
+          eventType: COMM_EVENT_TYPES.REVIEW_REQUEST,
+          recipientName: request.client.name,
+          clientId: request.client.id,
+        })
+        sentViaSms = true
+      }
 
       await db.$transaction([
         db.reviewRequest.update({
           where: { id: request.id },
-          data: { status: 'sent', sentAt: now, sentViaEmail: true },
+          data: {
+            status: 'sent',
+            sentAt: now,
+            sentViaEmail: !!request.client?.email,
+            sentViaSms,
+          },
         }),
         db.client.update({
           where: { id: request.client.id },
@@ -93,6 +133,27 @@ export async function GET(req: NextRequest) {
       sent++
     } catch {
       skipped++
+    }
+  }
+
+  // Phase 11: Negative review admin SMS alert — check for unacknowledged flagged reviews
+  if (settings?.adminNotificationPhone) {
+    const unacknowledgedNeg = await db.googleReview.findMany({
+      where: { flagged: true, flagAcknowledgedAt: null },
+      orderBy: { publishedAt: 'desc' },
+      take: 1,
+    })
+    for (const review of unacknowledgedNeg) {
+      void sendSms({
+        to: settings.adminNotificationPhone,
+        body: SMS_TEMPLATES.ADMIN_NEGATIVE_REVIEW({
+          rating: review.rating,
+          author: review.authorName,
+        }),
+        eventType: COMM_EVENT_TYPES.ADMIN_NEGATIVE_REVIEW,
+        recipientName: 'Admin',
+        skipOptInCheck: true,
+      }).catch((err: unknown) => console.error('Negative review SMS failed:', err))
     }
   }
 

@@ -1,10 +1,18 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format, formatDistanceToNow, subDays } from 'date-fns'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft, Pencil, Mail, MessageSquare } from 'lucide-react'
 import { db } from '@/lib/db'
 import ClientActions from '@/components/admin/clients/ClientActions'
 import ClientInternalNotes from '@/components/admin/clients/ClientInternalNotes'
+import SmsOptInPanel from '@/components/admin/communications/SmsOptInPanel'
+import {
+  clientSendOptIn,
+  clientMarkVerbalOptIn,
+  clientMarkOptedOut,
+  clientOverrideOptOut,
+} from '@/app/(admin)/clients/actions'
+import { COMM_EVENT_LABELS } from '@/lib/communications/templates'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -65,7 +73,7 @@ export default async function ClientProfilePage({ params, searchParams }: Props)
   const jobWhere: Record<string, unknown> = { clientId: id }
   if (jobStatus) jobWhere.status = jobStatus
 
-  const [financialSummary, outstandingJobs, lastJob, nextJob, jobs, totalJobs, futureJobCount] =
+  const [financialSummary, outstandingJobs, lastJob, nextJob, jobs, totalJobs, futureJobCount, recentComms] =
     await Promise.all([
       db.job.aggregate({
         where: { clientId: id, status: 'paid' },
@@ -108,6 +116,11 @@ export default async function ClientProfilePage({ params, searchParams }: Props)
       db.job.count({ where: jobWhere }),
       db.job.count({
         where: { clientId: id, scheduledAt: { gte: today }, status: { not: 'cancelled' } },
+      }),
+      db.communication.findMany({
+        where: { clientId: id },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
       }),
     ])
 
@@ -282,6 +295,24 @@ export default async function ClientProfilePage({ params, searchParams }: Props)
               />
             </div>
           </div>
+
+          {/* SMS Opt-In Panel */}
+          <SmsOptInPanel
+            id={id}
+            name={client.name}
+            phone={client.phone}
+            smsOptedIn={client.smsOptedIn}
+            smsOptedOut={client.smsOptedOut}
+            smsOptedInAt={client.smsOptedInAt?.toISOString() ?? null}
+            smsOptedOutAt={client.smsOptedOutAt?.toISOString() ?? null}
+            actions={{
+              kind: 'client',
+              sendOptIn: clientSendOptIn,
+              markVerbal: clientMarkVerbalOptIn,
+              markOptedOut: clientMarkOptedOut,
+              overrideOptOut: clientOverrideOptOut,
+            }}
+          />
         </div>
 
         {/* Right column */}
@@ -335,6 +366,49 @@ export default async function ClientProfilePage({ params, searchParams }: Props)
               </div>
             </div>
           </div>
+
+          {/* Communications Timeline */}
+          {recentComms.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-gray-900">Communications</h2>
+                <Link
+                  href={`/communications?clientId=${id}`}
+                  className="text-xs text-brand-navy hover:underline"
+                >
+                  View all →
+                </Link>
+              </div>
+              <div className="space-y-2">
+                {recentComms.map(comm => (
+                  <div key={comm.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                    <div className="shrink-0 mt-0.5">
+                      {comm.channel === 'email' ? (
+                        <Mail className="w-3.5 h-3.5 text-blue-400" />
+                      ) : (
+                        <MessageSquare className="w-3.5 h-3.5 text-green-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-700 truncate">
+                        {COMM_EVENT_LABELS[comm.eventType] ?? comm.eventType}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {formatDistanceToNow(new Date(comm.createdAt), { addSuffix: true })}
+                      </p>
+                    </div>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                      comm.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                      comm.status === 'failed' || comm.status === 'bounced' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-500'
+                    }`}>
+                      {comm.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Job History */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">

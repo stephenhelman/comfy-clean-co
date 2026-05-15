@@ -61,6 +61,12 @@ export default async function LeadsPage({ searchParams }: Props) {
           <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-poppins)' }}>Leads</h1>
           <p className="text-sm text-gray-500 mt-0.5">{total} total</p>
         </div>
+        <Link
+          href="/leads/new"
+          className="px-4 py-2 bg-brand-navy text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          + New Lead
+        </Link>
       </div>
 
       <div className="mb-4">

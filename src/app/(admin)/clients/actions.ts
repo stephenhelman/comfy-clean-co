@@ -6,6 +6,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
 import { z } from 'zod'
+import { sendSms } from '@/lib/communications/sendSms'
+import { COMM_EVENT_TYPES, SMS_TEMPLATES } from '@/lib/communications/templates'
 
 async function getSession() {
   const session = await auth()
@@ -88,11 +90,14 @@ export async function createClient(formData: FormData) {
   }
 
   const data = parsed.data
+  const phone = data.phone || null
+  const smsChoice = (formData.get('smsChoice') as string) || 'email_only'
+
   const client = await db.client.create({
     data: {
       name: data.name,
       email: data.email || null,
-      phone: data.phone || null,
+      phone,
       type: data.type,
       companyName: data.companyName || null,
       secondaryContactName: data.secondaryContactName || null,
@@ -116,12 +121,40 @@ export async function createClient(formData: FormData) {
       referredBy: data.referredBy || null,
       internalNotes: data.internalNotes || null,
       active: true,
+      // Phase 11b: SMS opt-in state
+      smsOptedIn: phone ? smsChoice === 'verbal' : false,
+      smsOptedInAt: phone && smsChoice === 'verbal' ? new Date() : null,
+      smsOptedOut: false,
     },
   })
 
+  if (phone && smsChoice === 'send_now') {
+    void sendSms({
+      to: phone,
+      body: SMS_TEMPLATES.OPT_IN(),
+      eventType: COMM_EVENT_TYPES.SMS_OPT_IN,
+      recipientName: client.name,
+      clientId: client.id,
+      skipOptInCheck: true,
+    }).catch((err: unknown) => console.error('Client opt-in SMS failed:', err))
+  }
+
+  if (phone && smsChoice === 'verbal') {
+    void sendSms({
+      to: phone,
+      body: SMS_TEMPLATES.WELCOME(),
+      eventType: COMM_EVENT_TYPES.SMS_WELCOME,
+      recipientName: client.name,
+      clientId: client.id,
+      skipOptInCheck: true,
+    }).catch((err: unknown) => console.error('Client welcome SMS failed:', err))
+  }
+
+  const smsLabel = { send_now: 'opt-in text sent', verbal: 'verbally opted in', email_only: 'email only' }[smsChoice] ?? 'email only'
+
   await logActivity({
     eventType: ACTIVITY_EVENTS.CLIENT_CREATED,
-    description: `New client added — ${client.name}`,
+    description: `New client added — ${client.name} — SMS: ${phone ? smsLabel : 'no phone'}`,
     linkPath: `/clients/${client.id}`,
     actorName: session.user.name ?? undefined,
     actorId: session.user.id,
@@ -239,4 +272,101 @@ export async function saveClientNotes(clientId: string, notes: string) {
     actorName: session.user.name ?? undefined,
     actorId: session.user.id,
   })
+}
+
+// ─── Phase 11 — Client SMS Opt-In Panel Actions ──────────────────────────────
+
+export async function clientSendOptIn(clientId: string) {
+  const session = await getSession()
+  const client = await db.client.findUniqueOrThrow({ where: { id: clientId } })
+  if (!client.phone) throw new Error('No phone number on file')
+
+  await sendSms({
+    to: client.phone,
+    body: SMS_TEMPLATES.OPT_IN(),
+    eventType: COMM_EVENT_TYPES.SMS_OPT_IN,
+    recipientName: client.name,
+    clientId: client.id,
+    skipOptInCheck: true,
+  })
+
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.CLIENT_UPDATED,
+    description: `${session.user.name} resent SMS opt-in to ${client.name}`,
+    linkPath: `/clients/${clientId}`,
+    actorName: session.user.name ?? undefined,
+    actorId: session.user.id,
+  })
+
+  revalidatePath(`/clients/${clientId}`)
+}
+
+export async function clientMarkVerbalOptIn(clientId: string) {
+  const session = await getSession()
+  const client = await db.client.findUniqueOrThrow({ where: { id: clientId } })
+  if (!client.phone) throw new Error('No phone number on file')
+
+  await db.client.update({
+    where: { id: clientId },
+    data: { smsOptedIn: true, smsOptedInAt: new Date() },
+  })
+
+  await sendSms({
+    to: client.phone,
+    body: SMS_TEMPLATES.WELCOME(),
+    eventType: COMM_EVENT_TYPES.SMS_WELCOME,
+    recipientName: client.name,
+    clientId: client.id,
+    skipOptInCheck: true,
+  })
+
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.CLIENT_UPDATED,
+    description: `${session.user.name} marked ${client.name} as verbally opted in`,
+    linkPath: `/clients/${clientId}`,
+    actorName: session.user.name ?? undefined,
+    actorId: session.user.id,
+  })
+
+  revalidatePath(`/clients/${clientId}`)
+}
+
+export async function clientMarkOptedOut(clientId: string) {
+  const session = await getSession()
+  const client = await db.client.findUniqueOrThrow({ where: { id: clientId } })
+
+  await db.client.update({
+    where: { id: clientId },
+    data: { smsOptedOut: true, smsOptedOutAt: new Date() },
+  })
+
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.CLIENT_UPDATED,
+    description: `${session.user.name} marked ${client.name} as opted out of SMS`,
+    linkPath: `/clients/${clientId}`,
+    actorName: session.user.name ?? undefined,
+    actorId: session.user.id,
+  })
+
+  revalidatePath(`/clients/${clientId}`)
+}
+
+export async function clientOverrideOptOut(clientId: string) {
+  const session = await getSession()
+  const client = await db.client.findUniqueOrThrow({ where: { id: clientId } })
+
+  await db.client.update({
+    where: { id: clientId },
+    data: { smsOptedOut: false, smsOptedIn: true, smsOptedInAt: new Date() },
+  })
+
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.CLIENT_UPDATED,
+    description: `${session.user.name} manually overrode SMS opt-out for ${client.name}`,
+    linkPath: `/clients/${clientId}`,
+    actorName: session.user.name ?? undefined,
+    actorId: session.user.id,
+  })
+
+  revalidatePath(`/clients/${clientId}`)
 }

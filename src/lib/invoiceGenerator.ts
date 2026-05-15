@@ -1,6 +1,9 @@
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
 import { format } from 'date-fns'
+import { sendSms } from '@/lib/communications/sendSms'
+import { sendEmail } from '@/lib/communications/sendEmail'
+import { COMM_EVENT_TYPES, SMS_TEMPLATES } from '@/lib/communications/templates'
 
 async function sendInvoiceEmail(params: {
   to: string
@@ -196,6 +199,23 @@ export async function generateInvoice(jobId: string, isResend = false) {
     }
   }
 
+  // Phase 11: Invoice sent SMS
+  if (job.client.phone) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://comfycleanco.com'
+    void sendSms({
+      to: job.client.phone,
+      body: SMS_TEMPLATES.INVOICE_SENT({
+        firstName: job.client.name.split(' ')[0],
+        date: format(job.scheduledAt, 'MMM d'),
+        amount: job.estimatedValue.toFixed(2),
+        payLink: `${siteUrl}/pay/${invoice.id}`,
+      }),
+      eventType: COMM_EVENT_TYPES.INVOICE_SENT,
+      recipientName: job.client.name,
+      clientId: job.client.id,
+    }).catch((err: unknown) => console.error('Invoice SMS failed:', err))
+  }
+
   await logActivity({
     eventType: ACTIVITY_EVENTS.INVOICE_SENT,
     description: `Invoice ${invoiceNumber} sent to ${job.client.name} — $${job.estimatedValue.toFixed(2)}`,
@@ -232,25 +252,19 @@ export async function resendInvoiceEmail(jobId: string) {
   })
 }
 
-// C-21: When Phase 11 is built, replace this with sendEmail() from lib/communications/sendEmail.ts
-// TODO Phase 11: replace with sendEmail({ eventType: COMM_EVENT_TYPES.PAYMENT_RECEIPT, ... })
 export async function sendPaidReceipt(invoiceId: string) {
-  if (!process.env.RESEND_API_KEY) return
-  const { Resend } = await import('resend')
-  const resend = new Resend(process.env.RESEND_API_KEY)
-
   const invoice = await db.invoice.findUnique({
     where: { id: invoiceId },
     include: {
       job: { select: { scheduledAt: true, jobType: true, serviceAddress: true, serviceCity: true } },
-      client: { select: { name: true, email: true } },
+      client: { select: { id: true, name: true, email: true, phone: true } },
     },
   })
-  if (!invoice || !invoice.client.email) return
+  if (!invoice) return
 
-  const fromEmail = process.env.EMAIL_NOREPLY ?? 'noreply@comfycleanco.com'
   const amountPaid = invoice.amountPaid ?? invoice.amount
   const dateStr = format(new Date(invoice.job.scheduledAt), 'EEEE, MMMM d, yyyy')
+  const shortDate = format(new Date(invoice.job.scheduledAt), 'MMM d')
   const subject = `Payment Received — ${invoice.invoiceNumber}`
 
   const html = `<!DOCTYPE html>
@@ -279,16 +293,37 @@ export async function sendPaidReceipt(invoiceId: string) {
 </body>
 </html>`
 
-  try {
-    await resend.emails.send({ from: fromEmail, to: invoice.client.email, subject, html })
-    await logActivity({
-      eventType: ACTIVITY_EVENTS.RECEIPT_SENT,
-      description: `Receipt sent to ${invoice.client.name} for ${invoice.invoiceNumber}`,
-      linkPath: `/invoices`,
+  if (invoice.client.email) {
+    await sendEmail({
+      to: invoice.client.email,
+      subject,
+      html,
+      eventType: COMM_EVENT_TYPES.PAYMENT_RECEIPT,
+      recipientName: invoice.client.name,
+      clientId: invoice.client.id,
     })
-  } catch (_) {
-    // Non-blocking
   }
+
+  // Phase 11: Payment receipt SMS
+  if (invoice.client.phone) {
+    void sendSms({
+      to: invoice.client.phone,
+      body: SMS_TEMPLATES.PAYMENT_RECEIPT({
+        firstName: invoice.client.name.split(' ')[0],
+        amount: amountPaid.toFixed(2),
+        date: shortDate,
+      }),
+      eventType: COMM_EVENT_TYPES.PAYMENT_RECEIPT,
+      recipientName: invoice.client.name,
+      clientId: invoice.client.id,
+    }).catch((err: unknown) => console.error('Receipt SMS failed:', err))
+  }
+
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.RECEIPT_SENT,
+    description: `Receipt sent to ${invoice.client.name} for ${invoice.invoiceNumber}`,
+    linkPath: `/invoices`,
+  })
 }
 
 export async function sendAppointmentConfirmation(jobId: string) {
@@ -296,17 +331,34 @@ export async function sendAppointmentConfirmation(jobId: string) {
     where: { id: jobId },
     include: { client: true },
   })
-  if (!job?.client.email) return
+  if (!job) return
 
-  try {
-    await sendConfirmationEmail({
-      to: job.client.email,
-      clientName: job.client.name,
-      scheduledAt: job.scheduledAt,
-      jobType: job.jobType,
-      serviceAddress: `${job.serviceAddress}, ${job.serviceCity}`,
-    })
-  } catch (_) {
-    // Non-blocking
+  if (job.client.email) {
+    try {
+      await sendConfirmationEmail({
+        to: job.client.email,
+        clientName: job.client.name,
+        scheduledAt: job.scheduledAt,
+        jobType: job.jobType,
+        serviceAddress: `${job.serviceAddress}, ${job.serviceCity}`,
+      })
+    } catch (_) {
+      // Non-blocking
+    }
+  }
+
+  // Phase 11: Appointment confirmed SMS
+  if (job.client.phone) {
+    void sendSms({
+      to: job.client.phone,
+      body: SMS_TEMPLATES.APPOINTMENT_CONFIRMED({
+        firstName: job.client.name.split(' ')[0],
+        date: format(job.scheduledAt, 'EEEE, MMM d'),
+        time: format(job.scheduledAt, 'h:mm a'),
+      }),
+      eventType: COMM_EVENT_TYPES.APPOINTMENT_CONFIRMED,
+      recipientName: job.client.name,
+      clientId: job.client.id,
+    }).catch((err: unknown) => console.error('Confirmation SMS failed:', err))
   }
 }
