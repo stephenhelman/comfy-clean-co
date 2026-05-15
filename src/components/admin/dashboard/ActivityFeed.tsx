@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { db } from '@/lib/db'
 import { formatDistanceToNow } from 'date-fns'
 import { Activity } from 'lucide-react'
+import { ACTIVITY_EVENTS } from '@/lib/activityLog'
 
 const EVENT_ICONS: Record<string, string> = {
   job_created:            '📋',
@@ -18,17 +19,65 @@ const EVENT_ICONS: Record<string, string> = {
   invoice_overdue:        '🔔',
 }
 
-async function getRecentActivity() {
+const MANAGER_EVENTS = [
+  ACTIVITY_EVENTS.JOB_CREATED, ACTIVITY_EVENTS.JOB_EDITED, ACTIVITY_EVENTS.JOB_CANCELLED,
+  ACTIVITY_EVENTS.JOB_BUMPED, ACTIVITY_EVENTS.JOB_LOCK_OUT, ACTIVITY_EVENTS.JOB_COMPLETED,
+  ACTIVITY_EVENTS.CLEANER_ASSIGNED, ACTIVITY_EVENTS.CLEANER_REMOVED,
+  ACTIVITY_EVENTS.LEAD_SUBMITTED, ACTIVITY_EVENTS.LEAD_CONTACTED, ACTIVITY_EVENTS.LEAD_CALL_LOGGED,
+  ACTIVITY_EVENTS.LEAD_QUOTE_SENT, ACTIVITY_EVENTS.LEAD_CONVERTED, ACTIVITY_EVENTS.LEAD_LOST,
+  ACTIVITY_EVENTS.LEAD_REOPENED, ACTIVITY_EVENTS.LEAD_DUPLICATE, ACTIVITY_EVENTS.LEAD_CREATED_MANUAL,
+  ACTIVITY_EVENTS.CLIENT_CREATED, ACTIVITY_EVENTS.CLIENT_UPDATED, ACTIVITY_EVENTS.CLIENT_DEACTIVATED,
+  ACTIVITY_EVENTS.CLIENT_REACTIVATED, ACTIVITY_EVENTS.CLIENT_NOTES_UPDATED,
+  ACTIVITY_EVENTS.CLEANER_CREATED, ACTIVITY_EVENTS.CLEANER_UPDATED, ACTIVITY_EVENTS.CLEANER_DEACTIVATED,
+  ACTIVITY_EVENTS.CLEANER_REACTIVATED, ACTIVITY_EVENTS.CLEANER_PIN_RESET, ACTIVITY_EVENTS.CLEANER_PIN_UNLOCKED,
+  ACTIVITY_EVENTS.CLEANER_TIMECLOCK_EDITED,
+  ACTIVITY_EVENTS.REVIEW_REQUEST_QUEUED, ACTIVITY_EVENTS.REVIEW_REQUEST_SENT,
+  ACTIVITY_EVENTS.REVIEW_RECEIVED, ACTIVITY_EVENTS.NEGATIVE_REVIEW_RECEIVED,
+  ACTIVITY_EVENTS.NEGATIVE_REVIEW_ACK, ACTIVITY_EVENTS.REVIEW_AUTO_MATCHED, ACTIVITY_EVENTS.REVIEW_MANUAL_MATCHED,
+  ACTIVITY_EVENTS.SMS_OPT_IN_CONFIRMED, ACTIVITY_EVENTS.SMS_OPT_OUT, ACTIVITY_EVENTS.SMS_OPT_IN_OVERRIDE,
+]
+
+const BOOKKEEPER_EVENTS = [
+  ACTIVITY_EVENTS.PAYMENT_CONFIRMED, ACTIVITY_EVENTS.INVOICE_SENT, ACTIVITY_EVENTS.INVOICE_RESENT,
+  ACTIVITY_EVENTS.INVOICE_OVERDUE, ACTIVITY_EVENTS.INVOICE_VOIDED, ACTIVITY_EVENTS.INVOICE_WRITTEN_OFF,
+  ACTIVITY_EVENTS.RECEIPT_SENT,
+]
+
+const DISPATCHER_EVENTS = [
+  ACTIVITY_EVENTS.JOB_CREATED, ACTIVITY_EVENTS.CLEANER_ASSIGNED,
+  ACTIVITY_EVENTS.JOB_CANCELLED, ACTIVITY_EVENTS.JOB_BUMPED,
+]
+
+const VIEWER_EVENTS = [
+  ACTIVITY_EVENTS.JOB_CREATED, ACTIVITY_EVENTS.CLEANER_ASSIGNED,
+]
+
+function getAllowedEvents(role: string): string[] | null {
+  switch (role) {
+    case 'owner':      return null                // all events
+    case 'manager':    return MANAGER_EVENTS
+    case 'bookkeeper': return BOOKKEEPER_EVENTS
+    case 'dispatcher': return DISPATCHER_EVENTS
+    case 'viewer':     return VIEWER_EVENTS
+    default:           return VIEWER_EVENTS
+  }
+}
+
+async function getRecentActivity(role: string) {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const allowedEvents = getAllowedEvents(role)
   return db.activityLog.findMany({
-    where: { createdAt: { gte: since } },
+    where: {
+      createdAt: { gte: since },
+      ...(allowedEvents ? { eventType: { in: allowedEvents } } : {}),
+    },
     orderBy: { createdAt: 'desc' },
     take: 50,
   })
 }
 
-export async function ActivityFeed() {
-  const events = await getRecentActivity()
+export async function ActivityFeed({ role }: { role: string }) {
+  const events = await getRecentActivity(role)
 
   return (
     <aside className="w-full lg:w-72 xl:w-80 shrink-0">

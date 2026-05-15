@@ -1,4 +1,8 @@
 import { Suspense } from 'react'
+import { auth } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { hasPermission } from '@/lib/permissions'
+import type { Role } from '@/lib/permissions'
 import { StatusCards, StatusCardsSkeleton } from '@/components/admin/dashboard/StatusCards'
 import { TodaySchedule, TodayScheduleSkeleton } from '@/components/admin/dashboard/TodaySchedule'
 import { FinancialSnapshot, FinancialSnapshotSkeleton } from '@/components/admin/dashboard/FinancialSnapshot'
@@ -7,10 +11,17 @@ import { ActivityFeed, ActivityFeedSkeleton } from '@/components/admin/dashboard
 
 export const metadata = { title: 'Dashboard' }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await auth()
+  if (!session) redirect('/login')
+
+  const role = (session.user.role as Role) ?? 'viewer'
+
+  const showFinancial = hasPermission(role, 'dashboard.financial')
+  const showSchedule  = hasPermission(role, 'dashboard.schedule')
+
   return (
     <div className="p-6 max-w-screen-2xl mx-auto">
-      {/* Page header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-poppins)' }}>
           Dashboard
@@ -21,32 +32,30 @@ export default function DashboardPage() {
       </div>
 
       <div className="flex gap-6 items-start">
-        {/* Main column */}
         <div className="flex-1 min-w-0 space-y-6">
-          {/* Status cards */}
           <Suspense fallback={<StatusCardsSkeleton />}>
-            <StatusCards />
+            <StatusCards role={role} />
           </Suspense>
 
-          {/* Today's schedule */}
-          <Suspense fallback={<TodayScheduleSkeleton />}>
-            <TodaySchedule />
-          </Suspense>
+          {showSchedule && (
+            <Suspense fallback={<TodayScheduleSkeleton />}>
+              <TodaySchedule />
+            </Suspense>
+          )}
 
-          {/* Financial snapshot */}
-          <Suspense fallback={<FinancialSnapshotSkeleton />}>
-            <FinancialSnapshot />
-          </Suspense>
+          {showFinancial && (
+            <Suspense fallback={<FinancialSnapshotSkeleton />}>
+              <FinancialSnapshot />
+            </Suspense>
+          )}
 
-          {/* Alerts — hidden entirely when no alerts */}
           <Suspense>
-            <AlertsPanel />
+            <AlertsPanel role={role} />
           </Suspense>
         </div>
 
-        {/* Activity feed sidebar */}
         <Suspense fallback={<ActivityFeedSkeleton />}>
-          <ActivityFeed />
+          <ActivityFeed role={role} />
         </Suspense>
       </div>
     </div>

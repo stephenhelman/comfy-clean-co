@@ -111,7 +111,6 @@ export async function FinancialSnapshot() {
   return (
     <section>
       <h2 className="text-base font-semibold text-gray-900 mb-3">Financial Snapshot — This Month</h2>
-      {/* ROLE CHECK STUB — dashboard.financial — Owner, Bookkeeper only — Phase 12 */}
       <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100">
         {metrics.map((m) => (
           <div key={m.label} className="flex items-center gap-4 px-5 py-4">

@@ -5,14 +5,14 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
 import { handleFinalClockOut } from '@/lib/jobs/clockOut'
+import { requirePermission } from '@/lib/requirePermission'
 
 export async function adminEditClockOut(
   assignmentId: string,
   clockedOutAt: string,
   reason: string,
 ) {
-  // ROLE CHECK STUB — timeclock.edit_entry — Owner, Manager only — Phase 12
-  // TODO Phase 12: enforce via hasPermission(session.user.role, 'timeclock.edit_entry')
+  await requirePermission('timeclock.edit_entry')
   const session = await auth()
   if (!session) throw new Error('Unauthorized')
 

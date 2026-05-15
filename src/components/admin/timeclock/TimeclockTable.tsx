@@ -190,8 +190,6 @@ export default function TimeclockTable({ entries, total, page, pageSize, cleaner
       <div className="px-6 py-4 border-b border-gray-200 shrink-0">
         <h1 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-poppins)' }}>Time Clock Records</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          {/* ROLE CHECK STUB — timeclock.view — Owner, Manager, Bookkeeper only — Phase 12 */}
-          {/* DEPENDENCY: Phase 5b must be complete before this phase. GeocodedAddress model required for map view. */}
           All clock-in and clock-out entries for cleaners.
         </p>
       </div>

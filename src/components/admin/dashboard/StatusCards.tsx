@@ -72,7 +72,7 @@ function dotColor(level: 'green' | 'amber' | 'red' | 'teal' | 'gray') {
   return map[level]
 }
 
-export async function StatusCards() {
+export async function StatusCards({ role }: { role: string }) {
   const data = await getStatusData()
 
   const jobsLevel = data.todayUnassigned === 0 ? 'green' : data.todayUnassigned < data.todayTotal ? 'amber' : 'red'
@@ -80,9 +80,14 @@ export async function StatusCards() {
   const paymentsLevel = data.outstandingCount === 0 ? 'green' : data.outstandingCount <= 3 ? 'amber' : 'red'
   const leadsLevel = data.newLeadsCount > 0 ? 'teal' : 'gray'
 
-  const cards = [
+  const showJobs     = role !== 'bookkeeper'
+  const showPayments = role === 'owner' || role === 'bookkeeper'
+  const showLeads    = role === 'owner' || role === 'manager'
+
+  const allCards = [
     {
       title: 'Jobs Today',
+      show: showJobs,
       value: data.todayTotal,
       sub: data.todayTotal === 0 ? 'No jobs scheduled' : `${data.todayAssigned} assigned / ${data.todayUnassigned} unassigned`,
       level: jobsLevel as Parameters<typeof cardColor>[0],
@@ -90,6 +95,7 @@ export async function StatusCards() {
     },
     {
       title: 'In Progress Now',
+      show: showJobs,
       value: data.inProgressCount,
       sub: `${data.activeClockedIn} cleaners on the clock`,
       level: progressLevel as Parameters<typeof cardColor>[0],
@@ -97,6 +103,7 @@ export async function StatusCards() {
     },
     {
       title: 'Outstanding Payments',
+      show: showPayments,
       value: data.outstandingCount,
       sub: data.outstandingCount > 0 ? formatCurrency(data.outstandingValue) + ' total' : 'All caught up',
       level: paymentsLevel as Parameters<typeof cardColor>[0],
@@ -104,12 +111,15 @@ export async function StatusCards() {
     },
     {
       title: 'New Leads',
+      show: showLeads,
       value: data.newLeadsCount,
       sub: data.last24hLeads > 0 ? `${data.last24hLeads} received in last 24 hours` : 'No new leads today',
       level: leadsLevel as Parameters<typeof cardColor>[0],
       href: '/leads',
     },
   ]
+
+  const cards = allCards.filter((c) => c.show)
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

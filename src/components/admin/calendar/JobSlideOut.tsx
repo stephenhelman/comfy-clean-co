@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { MapPin, Pencil, RefreshCw } from 'lucide-react'
+import { usePermission } from '@/hooks/usePermission'
 import {
   confirmZellePayment,
   confirmCashAppointment,
@@ -60,6 +61,7 @@ interface Props {
 export default function JobSlideOut({ job, cleaners, maxJobsPerCleaner, onClose }: Props) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState('')
+  const canViewFinancial = usePermission('jobs.view_financial')
 
   // Payment modals
   const [showZelleConfirm, setShowZelleConfirm] = useState(false)
@@ -305,12 +307,9 @@ export default function JobSlideOut({ job, cleaners, maxJobsPerCleaner, onClose 
         </div>
       )}
 
-      {/* Cost Breakdown — after all clocked out */}
-      {job.assignments.some((a) => a.clockedOutAt) && (
+      {/* Cost Breakdown — Owner and Bookkeeper only, after all clocked out */}
+      {canViewFinancial && job.assignments.some((a) => a.clockedOutAt) && (
         <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-          {/* ROLE CHECK STUB — jobs.view_financial — Owner, Bookkeeper only — Phase 12
-              Hide this entire section for Manager, Dispatcher, Viewer roles
-              TODO Phase 12: enforce via usePermission('jobs.view_financial') hook */}
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cost Breakdown</h3>
           {job.assignments.map((a) => (
             <div key={a.id} className="flex justify-between text-xs">
