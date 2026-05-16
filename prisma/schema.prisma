@@ -93,6 +93,14 @@ model BusinessSettings {
   appointmentReminderHour     Int        @default(18)
   overdueDailyAlertThreshold  Int        @default(1)
 
+  // Payroll
+  payPeriodFrequency          String     @default("biweekly")
+  // weekly | biweekly | semi_monthly | monthly
+  payPeriodStartDay           Int        @default(1)
+  // weekly/biweekly: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+  // semi_monthly: ignored (always 1st and 16th)
+  // monthly: ignored (always 1st of month)
+
   // Integrations
   googleMyBusinessConnected   Boolean    @default(false)
   twilioConnected             Boolean    @default(false)

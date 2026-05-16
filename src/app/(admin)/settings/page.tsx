@@ -43,6 +43,8 @@ export default async function SettingsPage() {
     adminNotificationPhone: settings.adminNotificationPhone,
     automationSettings: settings.automationSettings as object,
     appointmentReminderHour: settings.appointmentReminderHour,
+    payPeriodFrequency: settings.payPeriodFrequency,
+    payPeriodStartDay: settings.payPeriodStartDay,
     updatedBy: settings.updatedBy,
   }
 

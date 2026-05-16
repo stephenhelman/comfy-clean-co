@@ -229,6 +229,39 @@ export async function saveAutomationSettings(automationSettings: object, appoint
   revalidatePath('/settings')
 }
 
+export async function savePayrollSettings(formData: FormData) {
+  const session = await getSession()
+  const settings = await getOrCreateSettings()
+
+  const frequency = formData.get('payPeriodFrequency') as string
+  const startDay = parseInt((formData.get('payPeriodStartDay') as string) ?? '1')
+
+  const validFrequencies = ['weekly', 'biweekly', 'semi_monthly', 'monthly']
+  if (!validFrequencies.includes(frequency)) {
+    throw new Error('Invalid pay period frequency')
+  }
+
+  await db.businessSettings.update({
+    where: { id: settings.id },
+    data: {
+      payPeriodFrequency: frequency,
+      payPeriodStartDay: startDay,
+      updatedBy: session.user.name ?? 'Admin',
+    },
+  })
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.SETTINGS_UPDATED,
+    description: `Payroll settings updated — ${frequency} starting ${dayNames[startDay] ?? startDay}`,
+    linkPath: '/settings',
+    actorName: session.user.name ?? undefined,
+    actorId: session.user.id,
+  })
+
+  revalidatePath('/settings')
+}
+
 export async function saveNotifications(formData: FormData) {
   const session = await getSession()
   const settings = await getOrCreateSettings()

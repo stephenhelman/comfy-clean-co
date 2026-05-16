@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { format, subDays, startOfDay } from 'date-fns'
+import { format, startOfDay } from 'date-fns'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { db } from '@/lib/db'
+import { getPayPeriod, type PayPeriodFrequency } from '@/lib/payPeriod'
+import { formatDuration } from '@/lib/formatDuration'
 import CleanerNotesEditor from '@/components/admin/cleaners/CleanerNotesEditor'
 import CleanerPinPanel from '@/components/admin/cleaners/CleanerPinPanel'
 import CleanerDeactivateButton from '@/components/admin/cleaners/CleanerDeactivateButton'
@@ -27,13 +29,6 @@ const DAY_ABBR: Record<string, string> = {
   thursday: 'Th', friday: 'F', saturday: 'Sa', sunday: 'Su',
 }
 
-function formatDuration(mins: number | null | undefined) {
-  if (mins == null) return '—'
-  const h = Math.floor(mins / 60)
-  const m = mins % 60
-  return h > 0 ? `${h}h ${m}m` : `${m}m`
-}
-
 export default async function CleanerProfilePage({ params, searchParams }: Props) {
   const { id } = await params
   const sp = await searchParams
@@ -43,7 +38,16 @@ export default async function CleanerProfilePage({ params, searchParams }: Props
   if (!cleaner) notFound()
 
   const today = startOfDay(new Date())
-  const payPeriodStart = subDays(new Date(), 14)
+
+  const payPeriodSettingsRaw = await db.businessSettings.findFirst({
+    select: { payPeriodFrequency: true, payPeriodStartDay: true },
+  })
+  const payPeriodSettings = {
+    payPeriodFrequency: (payPeriodSettingsRaw?.payPeriodFrequency ?? 'biweekly') as PayPeriodFrequency,
+    payPeriodStartDay: payPeriodSettingsRaw?.payPeriodStartDay ?? 1,
+  }
+  const currentPeriod = getPayPeriod(payPeriodSettings, 0)
+  const payPeriodStart = currentPeriod.start
 
   const [payPeriodAssignments, upcomingAssignments, pastAssignments, preferredClients, futureJobsForDeactivate, cleanerSession] =
     await Promise.all([
@@ -277,7 +281,7 @@ export default async function CleanerProfilePage({ params, searchParams }: Props
         <div className="lg:col-span-2 space-y-5">
           {/* Pay Period Summary */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">Pay Period (Last 14 Days)</h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">Pay Period ({currentPeriod.label})</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Hours</p>

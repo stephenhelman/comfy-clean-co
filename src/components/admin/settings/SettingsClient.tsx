@@ -7,15 +7,17 @@ import {
   saveBusinessInfo, saveBranding, saveScheduling,
   addBlackoutDate, removeBlackoutDate,
   saveInvoicing, saveReviewSettings, saveNotifications,
-  saveAutomationSettings,
+  saveAutomationSettings, savePayrollSettings,
 } from '@/app/(admin)/settings/actions'
+import { getPayPeriod, type PayPeriodFrequency } from '@/lib/payPeriod'
 
-type Tab = 'business' | 'scheduling' | 'invoicing' | 'reviews' | 'notifications' | 'automations'
+type Tab = 'business' | 'scheduling' | 'invoicing' | 'payroll' | 'reviews' | 'notifications' | 'automations'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'business', label: 'Business & Branding' },
   { key: 'scheduling', label: 'Scheduling' },
   { key: 'invoicing', label: 'Invoicing & Payment' },
+  { key: 'payroll', label: 'Payroll' },
   { key: 'reviews', label: 'Reviews' },
   { key: 'notifications', label: 'Notifications' },
   { key: 'automations', label: 'Automations' },
@@ -104,6 +106,8 @@ interface SettingsData {
   adminNotificationPhone: string | null
   automationSettings: object
   appointmentReminderHour: number
+  payPeriodFrequency: string
+  payPeriodStartDay: number
   updatedBy: string | null
 }
 
@@ -145,6 +149,14 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
   const [autoSaved, setAutoSaved] = useState(false)
   const [autoError, setAutoError] = useState('')
 
+  const [payFreq, setPayFreq] = useState<PayPeriodFrequency>(
+    settings.payPeriodFrequency as PayPeriodFrequency,
+  )
+  const [payStartDay, setPayStartDay] = useState(settings.payPeriodStartDay)
+  const [payrollPending, startPayrollTransition] = useTransition()
+  const [payrollSaved, setPayrollSaved] = useState(false)
+  const [payrollError, setPayrollError] = useState('')
+
   const business = useFormSave(saveBusinessInfo)
   const branding = useFormSave(saveBranding)
   const scheduling = useFormSave(saveScheduling)
@@ -179,6 +191,23 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
       await addBlackoutDate(newBlackout)
       setBlackoutDates(prev => [...prev, newBlackout].sort())
       setNewBlackout('')
+    })
+  }
+
+  function handlePayrollSave() {
+    setPayrollSaved(false)
+    setPayrollError('')
+    startPayrollTransition(async () => {
+      try {
+        const fd = new FormData()
+        fd.set('payPeriodFrequency', payFreq)
+        fd.set('payPeriodStartDay', String(payStartDay))
+        await savePayrollSettings(fd)
+        setPayrollSaved(true)
+        setTimeout(() => setPayrollSaved(false), 3000)
+      } catch (err) {
+        setPayrollError(err instanceof Error ? err.message : 'Save failed')
+      }
     })
   }
 
@@ -403,6 +432,87 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
             </div>
           </form>
         )}
+
+        {/* ── Payroll ──────────────────────────────────────────────────────────── */}
+        {tab === 'payroll' && (() => {
+          const previewPeriod = getPayPeriod(
+            { payPeriodFrequency: payFreq, payPeriodStartDay: payStartDay },
+            0,
+          )
+          const showStartDay = payFreq === 'weekly' || payFreq === 'biweekly'
+          const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+          const FREQ_OPTIONS: { key: PayPeriodFrequency; label: string }[] = [
+            { key: 'weekly', label: 'Weekly' },
+            { key: 'biweekly', label: 'Biweekly' },
+            { key: 'semi_monthly', label: 'Semi-Monthly' },
+            { key: 'monthly', label: 'Monthly' },
+          ]
+
+          return (
+            <div className="space-y-5">
+              <Section title="Pay Period Settings">
+                <div className="space-y-5">
+                  <Field label="Pay Period Frequency">
+                    <div className="flex flex-wrap gap-2">
+                      {FREQ_OPTIONS.map(({ key, label }) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setPayFreq(key)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            payFreq === key
+                              ? 'bg-brand-navy text-white border-brand-navy'
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+
+                  {showStartDay && (
+                    <Field label="Pay Period Start Day">
+                      <div className="flex flex-wrap gap-2">
+                        {DAY_NAMES.map((name, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setPayStartDay(i)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                              payStartDay === i
+                                ? 'bg-brand-navy text-white border-brand-navy'
+                                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
+                  )}
+
+                  <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-600">
+                    Based on your settings, the current pay period is{' '}
+                    <span className="font-semibold text-gray-900">{previewPeriod.label}</span>
+                  </div>
+                </div>
+              </Section>
+
+              {payrollError && <p className="text-sm text-red-600">{payrollError}</p>}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handlePayrollSave}
+                  disabled={payrollPending}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm bg-brand-navy text-white rounded-lg hover:bg-brand-navy/90 disabled:opacity-50"
+                >
+                  {payrollPending ? 'Saving…' : payrollSaved ? <><CheckCircle className="w-4 h-4" />Saved</> : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* ── Reviews ──────────────────────────────────────────────────────────── */}
         {tab === 'reviews' && (
