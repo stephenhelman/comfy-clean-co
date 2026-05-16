@@ -1,17 +1,61 @@
 import { verifyCleanerSession } from '@/lib/cleanerAuth'
+import { db } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { subDays, addDays, startOfDay, endOfDay } from 'date-fns'
+import CalendarClient from '@/components/time/CalendarClient'
 import BottomNav from '@/components/time/BottomNav'
 import InstallPrompt from '@/components/time/InstallPrompt'
 
 export default async function CalendarPage() {
+  // PC-20: verifyCleanerSession called exactly once
   const session = await verifyCleanerSession()
   if (!session) redirect('/pin')
 
+  const today = new Date()
+  const rangeStart = startOfDay(subDays(today, 30))
+  const rangeEnd = endOfDay(addDays(today, 30))
+
+  const assignments = await db.jobAssignment.findMany({
+    where: {
+      cleanerId: session.cleanerId,
+      job: {
+        scheduledAt: {
+          gte: rangeStart,
+          lte: rangeEnd,
+        },
+        status: {
+          not: 'stand_by',
+        },
+      },
+    },
+    include: {
+      job: {
+        include: {
+          client: {
+            select: {
+              name: true,
+              defaultAddress: true,
+              defaultCity: true,
+              defaultZip: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      job: { scheduledAt: 'asc' },
+    },
+  })
+
   return (
     <>
-      <main className="flex-1 overflow-y-auto pb-20 p-4">
-        <h1 className="text-xl font-semibold text-gray-900">Schedule</h1>
-        <p className="text-gray-500 mt-2">Portal Phase 3 — coming soon</p>
+      <main className="flex flex-col flex-1 min-h-0 pb-16">
+        <CalendarClient
+          assignments={assignments}
+          today={today.toISOString()}
+          rangeStart={rangeStart.toISOString()}
+          rangeEnd={rangeEnd.toISOString()}
+        />
       </main>
       <BottomNav />
       <InstallPrompt />
