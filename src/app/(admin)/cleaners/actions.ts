@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { logActivity, ACTIVITY_EVENTS } from '@/lib/activityLog'
+import { requirePermission } from '@/lib/requirePermission'
 import { handleFinalClockOut } from '@/lib/jobs/clockOut'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
@@ -321,4 +322,28 @@ export async function editClockOut(
   })
 
   revalidatePath(`/cleaners/${assignment.cleanerId}`)
+}
+
+export async function resetCleanerDeviceAccess(cleanerId: string) {
+  const session = await getSession()
+  await requirePermission('cleaners.reset_pin')
+
+  const cleaner = await db.cleaner.findUniqueOrThrow({ where: { id: cleanerId } })
+
+  await db.cleanerSession.deleteMany({ where: { cleanerId } })
+  await db.cleaner.update({
+    where: { id: cleanerId },
+    data: { pinAttempts: 0, pinLockedUntil: null },
+  })
+
+  await logActivity({
+    eventType: ACTIVITY_EVENTS.CLEANER_DEVICE_RESET,
+    description: `${session.user.name} reset device access for ${cleaner.name}`,
+    linkPath: `/cleaners/${cleanerId}`,
+    actorName: session.user.name ?? undefined,
+    actorId: session.user.id,
+  })
+
+  revalidatePath(`/cleaners/${cleanerId}`)
+  return { success: true }
 }

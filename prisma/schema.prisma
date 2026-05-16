@@ -269,9 +269,25 @@ model Cleaner {
   // Relations
   assignments           JobAssignment[]
   preferredByClients    Client[]        // C-14: relation inferred from Client.preferredCleanerId
+  sessions              CleanerSession[]
 
   @@index([active])
   @@index([createdAt])
+}
+
+// ─── CleanerSession (Portal Phase 1) ─────────────────────────────────────────
+model CleanerSession {
+  id          String    @id @default(cuid())
+  cleanerId   String    @unique   // one active session per cleaner enforced at DB level
+  tokenHash   String              // bcrypt hash of the random session token
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  deviceHint  String?             // browser User-Agent — informational only
+
+  cleaner     Cleaner   @relation(fields: [cleanerId], references: [id])
+
+  @@index([cleanerId])
+  @@index([expiresAt])
 }
 
 // ─── Job ─────────────────────────────────────────────────────────────────────

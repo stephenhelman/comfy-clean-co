@@ -45,7 +45,7 @@ export default async function CleanerProfilePage({ params, searchParams }: Props
   const today = startOfDay(new Date())
   const payPeriodStart = subDays(new Date(), 14)
 
-  const [payPeriodAssignments, upcomingAssignments, pastAssignments, preferredClients, futureJobsForDeactivate] =
+  const [payPeriodAssignments, upcomingAssignments, pastAssignments, preferredClients, futureJobsForDeactivate, cleanerSession] =
     await Promise.all([
       db.jobAssignment.findMany({
         where: {
@@ -95,6 +95,10 @@ export default async function CleanerProfilePage({ params, searchParams }: Props
         },
         orderBy: { job: { scheduledAt: 'asc' } },
       }),
+      db.cleanerSession.findUnique({
+        where: { cleanerId: id },
+        select: { expiresAt: true },
+      }),
     ])
 
   const totalMinutes = payPeriodAssignments.reduce((s, a) => s + (a.durationMins ?? 0), 0)
@@ -109,6 +113,7 @@ export default async function CleanerProfilePage({ params, searchParams }: Props
   }))
 
   const isLocked = cleaner.pinLockedUntil != null && new Date(cleaner.pinLockedUntil) > new Date()
+  const hasActiveSession = cleanerSession != null && cleanerSession.expiresAt > new Date()
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto">
@@ -232,6 +237,8 @@ export default async function CleanerProfilePage({ params, searchParams }: Props
               cleanerId={id}
               pinLockedUntil={cleaner.pinLockedUntil}
               updatedAt={cleaner.updatedAt}
+              hasActiveSession={hasActiveSession}
+              cleanerName={cleaner.name}
             />
           </div>
 

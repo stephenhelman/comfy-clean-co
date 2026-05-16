@@ -2,16 +2,25 @@
 
 import { useState, useTransition } from 'react'
 import { format } from 'date-fns'
-import { resetPin, unlockPin } from '@/app/(admin)/cleaners/actions'
+import { resetPin, unlockPin, resetCleanerDeviceAccess } from '@/app/(admin)/cleaners/actions'
 
 interface Props {
   cleanerId: string
   pinLockedUntil: Date | null
   updatedAt: Date
+  hasActiveSession: boolean
+  cleanerName: string
 }
 
-export default function CleanerPinPanel({ cleanerId, pinLockedUntil, updatedAt }: Props) {
+export default function CleanerPinPanel({
+  cleanerId,
+  pinLockedUntil,
+  updatedAt,
+  hasActiveSession,
+  cleanerName,
+}: Props) {
   const [showReset, setShowReset] = useState(false)
+  const [showDeviceConfirm, setShowDeviceConfirm] = useState(false)
   const [pin, setPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [error, setError] = useState('')
@@ -47,6 +56,13 @@ export default function CleanerPinPanel({ cleanerId, pinLockedUntil, updatedAt }
     })
   }
 
+  function handleDeviceReset() {
+    startTransition(async () => {
+      await resetCleanerDeviceAccess(cleanerId)
+      setShowDeviceConfirm(false)
+    })
+  }
+
   return (
     <div className="space-y-3">
       <div className="text-sm text-gray-600">
@@ -59,6 +75,16 @@ export default function CleanerPinPanel({ cleanerId, pinLockedUntil, updatedAt }
           <p className="mt-1 text-green-600 font-medium">Unlocked</p>
         )}
       </div>
+
+      {/* Device session status */}
+      {hasActiveSession && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
+            Logged in on a device
+          </span>
+        </div>
+      )}
 
       <div className="flex gap-2 flex-wrap">
         <button
@@ -76,6 +102,16 @@ export default function CleanerPinPanel({ cleanerId, pinLockedUntil, updatedAt }
             className="px-3 py-1.5 border border-amber-400 text-amber-700 rounded-lg text-sm hover:bg-amber-50 transition-colors disabled:opacity-50"
           >
             {isPending ? 'Unlocking…' : 'Unlock PIN'}
+          </button>
+        )}
+        {hasActiveSession && (
+          <button
+            type="button"
+            onClick={() => setShowDeviceConfirm(true)}
+            disabled={isPending}
+            className="px-3 py-1.5 border border-red-300 text-red-700 rounded-lg text-sm hover:bg-red-50 transition-colors disabled:opacity-50"
+          >
+            Reset Device Access
           </button>
         )}
       </div>
@@ -127,6 +163,33 @@ export default function CleanerPinPanel({ cleanerId, pinLockedUntil, updatedAt }
               className="px-3 py-1.5 bg-brand-navy text-white rounded-lg text-sm hover:bg-brand-navy-dark disabled:opacity-50"
             >
               {isPending ? 'Saving…' : 'Save New PIN'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Reset device access confirmation */}
+      {showDeviceConfirm && (
+        <div className="bg-red-50 rounded-lg p-4 space-y-3 border border-red-200">
+          <p className="text-sm text-red-800 font-medium">Reset device access?</p>
+          <p className="text-xs text-red-700">
+            This will log <strong>{cleanerName}</strong> out of all devices. They will need to log in again with their PIN.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShowDeviceConfirm(false)}
+              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDeviceReset}
+              disabled={isPending}
+              className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50"
+            >
+              {isPending ? 'Resetting…' : 'Yes, Reset Access'}
             </button>
           </div>
         </div>

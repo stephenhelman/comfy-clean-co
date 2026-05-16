@@ -90,11 +90,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ─── time.comfycleanco.com → /time-portal/* ────────────────────────────────
+  // ─── time.comfycleanco.com → app/(time)/ route group ──────────────────────
   if (host === "time.comfycleanco.com" || host === "time.localhost") {
-    return NextResponse.rewrite(
-      new URL(`/time-portal${url.pathname}`, request.url),
-    );
+    const pathname = url.pathname
+
+    // Check session cookie for all protected routes
+    if (pathname !== '/pin' && !pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
+      const sessionCookie = request.cookies.get('cleaner-session')?.value
+      if (!sessionCookie) {
+        const pinUrl = new URL(request.url)
+        pinUrl.pathname = '/pin'
+        return NextResponse.redirect(pinUrl)
+      }
+    }
+
+    // Next.js route group strips (time) — routes resolve at /home, /calendar, /hours, /pin
+    return NextResponse.next()
   }
 
   // ─── pay.comfycleanco.com → /pay-redirect/* (C-19) ────────────────────────

@@ -89,6 +89,12 @@ export const ACTIVITY_EVENTS = {
   SMS_OPT_IN_CONFIRMED:     'sms_opt_in_confirmed',
   SMS_OPT_OUT:              'sms_opted_out',
   SMS_OPT_IN_OVERRIDE:      'sms_opt_in_admin_override',
+
+  // Cleaner Portal (Portal Phase 1+)
+  CLEANER_DEVICE_RESET:     'cleaner_device_reset',
+  CLEANER_PIN_LOCKED_PORTAL:'cleaner_pin_locked_portal',
+  CLEANER_CLOCKED_IN:       'cleaner_clocked_in',
+  CLEANER_CLOCKED_OUT:      'cleaner_clocked_out',
 } as const
 
 export type ActivityEventType = typeof ACTIVITY_EVENTS[keyof typeof ACTIVITY_EVENTS]
