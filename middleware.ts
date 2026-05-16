@@ -94,7 +94,13 @@ export async function middleware(request: NextRequest) {
   if (host === "time.comfycleanco.com" || host === "time.localhost") {
     const pathname = url.pathname
 
+    // Root redirect — (time)/page.tsx removed to avoid conflict with (admin)/page.tsx
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/home', request.url))
+    }
+
     // Check session cookie for all protected routes
+    // Routes: /home, /schedule, /hours, /pin
     if (pathname !== '/pin' && !pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
       const sessionCookie = request.cookies.get('cleaner-session')?.value
       if (!sessionCookie) {
@@ -104,7 +110,6 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Next.js route group strips (time) — routes resolve at /home, /calendar, /hours, /pin
     return NextResponse.next()
   }
 

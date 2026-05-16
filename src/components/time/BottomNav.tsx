@@ -6,7 +6,7 @@ import { Home, Calendar, Clock } from 'lucide-react'
 
 const tabs = [
   { href: '/home', label: 'Home', icon: Home },
-  { href: '/calendar', label: 'Schedule', icon: Calendar },
+  { href: '/schedule', label: 'Schedule', icon: Calendar },
   { href: '/hours', label: 'Hours', icon: Clock },
 ]
 

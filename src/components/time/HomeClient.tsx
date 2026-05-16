@@ -83,7 +83,7 @@ export default function HomeClient({
         {assignments.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-100 px-5 py-6 text-center shadow-sm">
             <p className="text-sm text-gray-500">No jobs scheduled for today</p>
-            <Link href="/calendar" className="text-sm text-teal-600 font-medium mt-1 inline-block">
+            <Link href="/schedule" className="text-sm text-teal-600 font-medium mt-1 inline-block">
               View your upcoming schedule →
             </Link>
           </div>

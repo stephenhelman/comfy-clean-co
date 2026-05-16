@@ -6,7 +6,7 @@ import CalendarClient from '@/components/time/CalendarClient'
 import BottomNav from '@/components/time/BottomNav'
 import InstallPrompt from '@/components/time/InstallPrompt'
 
-export default async function CalendarPage() {
+export default async function SchedulePage() {
   // PC-20: verifyCleanerSession called exactly once
   const session = await verifyCleanerSession()
   if (!session) redirect('/pin')
