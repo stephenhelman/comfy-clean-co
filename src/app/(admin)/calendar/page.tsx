@@ -133,7 +133,7 @@ export default async function CalendarPage({ searchParams }: Props) {
   }))
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-4 sm:p-6">
       <Suspense>
         <CalendarView
           jobs={serializedJobs}

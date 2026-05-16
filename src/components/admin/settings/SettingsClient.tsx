@@ -190,29 +190,30 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 shrink-0">
-        <h1 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-poppins)' }}>Settings</h1>
-        {settings.updatedBy && (
-          <p className="text-xs text-gray-400 mt-0.5">Last updated by {settings.updatedBy}</p>
-        )}
-      </div>
+    <div className="max-w-screen-2xl mx-auto">
+      {/* Header + Tabs — sticky so they stay visible while scrolling */}
+      <div className="sticky top-0 z-10 bg-brand-off-white">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+          <h1 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-poppins)' }}>Settings</h1>
+          {settings.updatedBy && (
+            <p className="text-xs text-gray-400 mt-0.5">Last updated by {settings.updatedBy}</p>
+          )}
+        </div>
 
-      {/* Tabs */}
-      <div className="px-6 border-b border-gray-200 flex shrink-0 overflow-x-auto">
-        {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
-              tab === t.key ? 'border-brand-navy text-brand-navy' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}>
-            {t.label}
-          </button>
-        ))}
+        <div className="px-4 sm:px-6 border-b border-gray-200 flex overflow-x-auto">
+          {TABS.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                tab === t.key ? 'border-brand-navy text-brand-navy' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 max-w-2xl">
+      <div className="px-4 sm:px-6 py-6 space-y-5 max-w-2xl">
 
         {/* ── Business & Branding ─────────────────────────────────────────────── */}
         {tab === 'business' && (
