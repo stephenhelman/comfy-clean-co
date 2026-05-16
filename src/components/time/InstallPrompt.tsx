@@ -15,13 +15,13 @@ export default function InstallPrompt() {
     if (window.matchMedia('(display-mode: standalone)').matches) return
     if (localStorage.getItem(STORAGE_KEY) === 'true') return
 
-    const handler = (e: Event) => {
+    const installHandler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e)
       setShow(true)
     }
 
-    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('beforeinstallprompt', installHandler)
 
     // iOS — no beforeinstallprompt, show manual instructions
     const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase())
@@ -29,7 +29,14 @@ export default function InstallPrompt() {
       setShow(true)
     }
 
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    // InstallTrigger fires this event to force re-show regardless of localStorage
+    const forceShowHandler = () => setShow(true)
+    window.addEventListener('comfyclean-show-install', forceShowHandler)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', installHandler)
+      window.removeEventListener('comfyclean-show-install', forceShowHandler)
+    }
   }, [])
 
   function handleDismiss() {

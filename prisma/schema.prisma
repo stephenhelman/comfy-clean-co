@@ -358,10 +358,15 @@ model JobAssignment {
   hourlyRateSnapshot  Float?
   laborCost           Float?
 
-  // GPS
+  // GPS at clock-in
   gpsLat              Float?
   gpsLng              Float?
   gpsBlocked          Boolean         @default(false)
+
+  // GPS at clock-out (Portal Phase 2)
+  clockOutGpsLat      Float?
+  clockOutGpsLng      Float?
+  clockOutGpsBlocked  Boolean         @default(false)
 
   locationPings       LocationPing[]
 
