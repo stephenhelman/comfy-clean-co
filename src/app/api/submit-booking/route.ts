@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { sendToGoogleSheets } from "@/lib/googleSheets";
+import { db } from "@/lib/db";
+import { logActivity, ACTIVITY_EVENTS } from "@/lib/activityLog";
 import { sendCustomerConfirmation, sendBusinessNotification } from "@/lib/email";
 import { BookingData } from "@/lib/services";
 
@@ -11,10 +12,9 @@ const ratelimit = new Ratelimit({
 });
 
 export async function POST(req: NextRequest) {
-  // Parse body
   const body = await req.json();
 
-  // Honeypot check — silent 200 for bots, no Upstash call wasted
+  // Honeypot — silent 200 for bots
   if (body.website) {
     return NextResponse.json({ success: true }, { status: 200 });
   }
@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
   // Rate limiting
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "anonymous";
-
   const { success } = await ratelimit.limit(ip);
   if (!success) {
     return NextResponse.json(
@@ -41,7 +40,50 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await sendToGoogleSheets(data);
+    // Duplicate detection — same email or phone with an open lead
+    const existing = await db.leadInquiry.findFirst({
+      where: {
+        OR: [{ email: data.email }, { phone: data.phone }],
+        status: { notIn: ["converted", "lost"] },
+      },
+    });
+
+    if (existing) {
+      const dupNote = `Duplicate booking submission received on ${new Date().toLocaleDateString("en-US")}. Address: ${data.address}, Home size: ${data.homeSize}.`;
+      await db.leadInquiry.update({
+        where: { id: existing.id },
+        data: { notes: existing.notes ? `${existing.notes}\n${dupNote}` : dupNote },
+      });
+    } else {
+      const notes = [
+        `Address: ${data.address}`,
+        `Home size: ${data.homeSize}`,
+        data.notes ? `Notes: ${data.notes}` : null,
+        data.languagePreference ? `Language preference: ${data.languagePreference}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const lead = await db.leadInquiry.create({
+        data: {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          type: data.serviceType,
+          frequency: data.frequency,
+          preferredDay: data.preferredDate,
+          preferredTime: data.preferredTime,
+          source: "website_booking",
+          notes: notes || null,
+        },
+      });
+
+      await logActivity({
+        eventType: ACTIVITY_EVENTS.LEAD_SUBMITTED,
+        description: `New booking request from ${data.name}`,
+        linkPath: `/leads/${lead.id}`,
+      });
+    }
 
     await Promise.all([
       sendCustomerConfirmation(data),
