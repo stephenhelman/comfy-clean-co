@@ -95,6 +95,12 @@ export const ACTIVITY_EVENTS = {
   CLEANER_PIN_LOCKED_PORTAL:'cleaner_pin_locked_portal',
   CLEANER_CLOCKED_IN:       'cleaner_clocked_in',
   CLEANER_CLOCKED_OUT:      'cleaner_clocked_out',
+
+  // ZenMaid Import
+  ZENMAID_CLEANERS_IMPORTED:    'zenmaid_cleaners_imported',
+  ZENMAID_CLIENTS_IMPORTED:     'zenmaid_clients_imported',
+  ZENMAID_JOBS_IMPORTED:        'zenmaid_jobs_imported',
+  ZENMAID_ASSIGNMENTS_IMPORTED: 'zenmaid_assignments_imported',
 } as const
 
 export type ActivityEventType = typeof ACTIVITY_EVENTS[keyof typeof ACTIVITY_EVENTS]

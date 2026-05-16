@@ -168,6 +168,9 @@ model LeadInquiry {
 model Client {
   id                    String    @id @default(cuid())
 
+  // External integration
+  externalId            String?   // ZenMaid Contact ID
+
   // Identity
   name                  String
   email                 String?
@@ -234,11 +237,15 @@ model Client {
   @@index([active])
   @@index([defaultZip])
   @@index([createdAt])
+  @@index([externalId])
 }
 
 // ─── Cleaner (C-07: colorIndex added) ────────────────────────────────────────
 model Cleaner {
   id                    String          @id @default(cuid())
+
+  // External integration
+  externalId            String?   // ZenMaid Cleaner ID
 
   // Identity
   name                  String
@@ -281,6 +288,7 @@ model Cleaner {
 
   @@index([active])
   @@index([createdAt])
+  @@index([externalId])
 }
 
 // ─── CleanerSession (Portal Phase 1) ─────────────────────────────────────────
@@ -301,6 +309,9 @@ model CleanerSession {
 // ─── Job ─────────────────────────────────────────────────────────────────────
 model Job {
   id                String          @id @default(cuid())
+
+  // External integration
+  externalId        String?   // ZenMaid Appointment ID
 
   clientId          String
   client            Client          @relation(fields: [clientId], references: [id])
@@ -346,6 +357,7 @@ model Job {
   @@index([status])
   @@index([clientId])
   @@index([recurringGroupId])
+  @@index([externalId])
 }
 
 // ─── JobAssignment ────────────────────────────────────────────────────────────
@@ -365,6 +377,7 @@ model JobAssignment {
   // Financial snapshot — immutable after clock-out
   hourlyRateSnapshot  Float?
   laborCost           Float?
+  flatRatePay         Float?   // manual flat pay (Maria Araujo per-job override)
 
   // GPS at clock-in
   gpsLat              Float?

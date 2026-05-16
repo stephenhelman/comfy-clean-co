@@ -2,7 +2,8 @@
 
 import { useState, useTransition, useRef } from 'react'
 import { format, parseISO } from 'date-fns'
-import { X, Plus, AlertTriangle, CheckCircle } from 'lucide-react'
+import { X, Plus, AlertTriangle, CheckCircle, Upload } from 'lucide-react'
+import Link from 'next/link'
 import {
   saveBusinessInfo, saveBranding, saveScheduling,
   addBlackoutDate, removeBlackoutDate,
@@ -745,6 +746,23 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
             </div>
           </div>
         )}
+
+        {/* ── Import ──────────────────────────────────────────────────────────── */}
+        <Section title="Import">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm text-gray-700 font-medium">ZenMaid Data Import</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                One-time migration tool for importing historical cleaners, clients, jobs, and assignments from ZenMaid.
+              </p>
+            </div>
+            <Link href="/settings/import"
+              className="flex items-center gap-2 shrink-0 px-4 py-2 text-sm bg-brand-navy text-white rounded-lg hover:bg-brand-navy/90">
+              <Upload className="w-4 h-4" />
+              Open Import Tool
+            </Link>
+          </div>
+        </Section>
 
       </div>
     </div>
