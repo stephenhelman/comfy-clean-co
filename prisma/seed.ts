@@ -42,7 +42,30 @@ async function main() {
     })
   }
 
+  // ─── Test Cleaner ─────────────────────────────────────────────────────────
+  const existingCleaner = await db.cleaner.findFirst({
+    where: { email: 'test@comfycleanco.com' },
+  })
+
+  if (!existingCleaner) {
+    const pinHash = await bcrypt.hash('1234', 10)
+
+    await db.cleaner.create({
+      data: {
+        name: 'Test Cleaner',
+        email: 'test@comfycleanco.com',
+        phone: '9155550001',
+        hourlyRate: 15.00,
+        active: true,
+        colorIndex: 0,
+        availableDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+        pinHash,
+      },
+    })
+  }
+
   console.log('Seed complete — Adam can log in at admin.comfycleanco.com')
+  console.log('Test Cleaner can log in at time.comfycleanco.com with PIN 1234')
 }
 
 main()
