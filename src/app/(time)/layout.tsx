@@ -1,3 +1,5 @@
+import '@/app/globals.css'
+
 // PC-03: Single root layout — no session check, no bottom nav, no install prompt.
 // Session check lives in each protected page. PIN page gets this layout only.
 // PC-21: Bottom nav is rendered per protected page, not here.
