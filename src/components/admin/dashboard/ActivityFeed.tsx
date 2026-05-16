@@ -93,7 +93,7 @@ export async function ActivityFeed({ role }: { role: string }) {
             No recent activity.
           </div>
         ) : (
-          <ul className="divide-y divide-gray-50 overflow-y-auto max-h-[calc(100vh-12rem)]">
+          <ul className="divide-y divide-gray-50 overflow-y-auto lg:max-h-[calc(100vh-12rem)]">
             {events.map((event) => {
               const icon = EVENT_ICONS[event.eventType] ?? '•'
               const timeAgo = formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })

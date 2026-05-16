@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const showSchedule  = hasPermission(role, 'dashboard.schedule')
 
   return (
-    <div className="p-6 max-w-screen-2xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-screen-2xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-poppins)' }}>
           Dashboard
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="flex gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 space-y-6">
           <Suspense fallback={<StatusCardsSkeleton />}>
             <StatusCards role={role} />

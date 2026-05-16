@@ -122,19 +122,21 @@ export async function StatusCards({ role }: { role: string }) {
   const cards = allCards.filter((c) => c.show)
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((card) => (
         <Link
           key={card.title}
           href={card.href}
-          className={`block rounded-xl border p-4 transition-shadow hover:shadow-md ${cardColor(card.level)}`}
+          className={`flex flex-col justify-between min-h-22 rounded-xl border p-4 transition-shadow hover:shadow-md ${cardColor(card.level)}`}
         >
           <div className="flex items-start justify-between mb-2">
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-70">{card.title}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide opacity-70 pr-2">{card.title}</p>
             <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-0.5 ${dotColor(card.level)}`} />
           </div>
-          <p className="text-3xl font-bold leading-none mb-1">{card.value}</p>
-          <p className="text-xs opacity-70">{card.sub}</p>
+          <div>
+            <p className="text-3xl font-bold leading-none mb-1">{card.value}</p>
+            <p className="text-xs opacity-70">{card.sub}</p>
+          </div>
         </Link>
       ))}
     </div>
@@ -143,7 +145,7 @@ export async function StatusCards({ role }: { role: string }) {
 
 export function StatusCardsSkeleton() {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {[...Array(4)].map((_, i) => (
         <div key={i} className="rounded-xl border border-gray-200 p-4 animate-pulse bg-white">
           <div className="h-3 bg-gray-200 rounded w-24 mb-3" />

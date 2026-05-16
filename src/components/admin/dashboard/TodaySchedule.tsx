@@ -81,9 +81,9 @@ export async function TodaySchedule() {
             <Link
               key={job.id}
               href={`/jobs/${job.id}`}
-              className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors"
+              className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
             >
-              <div className="w-16 shrink-0">
+              <div className="w-14 shrink-0 pt-0.5">
                 <p className="text-xs font-semibold text-gray-700">
                   {format(new Date(job.scheduledAt), 'h:mm a')}
                 </p>
@@ -92,24 +92,21 @@ export async function TodaySchedule() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{job.client.name}</p>
                 <p className="text-xs text-gray-500 truncate">{job.serviceAddress}</p>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${jobTypeBadge(job.jobType)}`}>
-                  {jobTypeLabel(job.jobType)}
-                </span>
-
-                {isUnassigned ? (
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">
-                    Unassigned
+                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${jobTypeBadge(job.jobType)}`}>
+                    {jobTypeLabel(job.jobType)}
                   </span>
-                ) : (
-                  <span className="text-xs text-gray-600 max-w-[120px] truncate">{cleanerNames}</span>
-                )}
-
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cls}`}>
-                  {label}
-                </span>
+                  {isUnassigned ? (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">
+                      Unassigned
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-600 truncate max-w-35">{cleanerNames}</span>
+                  )}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cls}`}>
+                    {label}
+                  </span>
+                </div>
               </div>
             </Link>
           )
