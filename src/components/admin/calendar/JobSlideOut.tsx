@@ -16,22 +16,14 @@ import {
   resendInvoice,
 } from '@/app/(admin)/jobs/actions'
 import type { CalendarJob } from './CalendarView'
+import { JOB_STATUS_LABELS, JOB_STATUS_TAILWIND } from '@/lib/statusColors'
 
 const CLEANER_COLORS = [
   '#3B82F6','#10B981','#F59E0B','#8B5CF6','#EF4444','#06B6D4',
   '#F97316','#84CC16','#EC4899','#14B8A6','#6366F1','#A78BFA',
 ]
 
-const JOB_STATUS_LABELS: Record<string, string> = {
-  stand_by: 'Stand-By', scheduled: 'Scheduled', in_progress: 'In Progress',
-  completed: 'Completed', cancelled: 'Cancelled', bump: 'Bumped', lock_out: 'Lock Out',
-}
-const JOB_STATUS_COLORS: Record<string, string> = {
-  stand_by: 'bg-purple-100 text-purple-700', scheduled: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-amber-100 text-amber-700', completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-gray-100 text-gray-500', bump: 'bg-yellow-100 text-yellow-700',
-  lock_out: 'bg-red-100 text-red-600',
-}
+const JOB_STATUS_COLORS = JOB_STATUS_TAILWIND
 const INVOICE_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft', sent: 'Sent', pending: 'Pending Confirmation', paid: 'Paid',
   overdue: 'Overdue', voided: 'Voided', refunded: 'Refunded', partially_refunded: 'Partial Refund',

@@ -46,6 +46,7 @@ export default async function SettingsPage() {
     payPeriodFrequency: settings.payPeriodFrequency,
     payPeriodStartDay: settings.payPeriodStartDay,
     updatedBy: settings.updatedBy,
+    timezone: settings.timezone,
   }
 
   return (

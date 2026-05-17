@@ -40,6 +40,7 @@ export async function saveBusinessInfo(formData: FormData) {
       businessZip: (formData.get('businessZip') as string) || null,
       businessPhone: (formData.get('businessPhone') as string) || null,
       businessEmail: (formData.get('businessEmail') as string) || null,
+      timezone: (formData.get('timezone') as string) || 'America/Denver',
       updatedBy: session.user.name ?? 'Admin',
     },
   })

@@ -10,17 +10,16 @@ import {
 } from 'recharts'
 import { hasPermission } from '@/lib/permissions'
 import type { Role } from '@/lib/permissions'
+import { JOB_STATUS_COLORS } from '@/lib/statusColors'
 
 const JOB_TYPE_LABELS: Record<string, string> = {
   standard: 'Standard', deep: 'Deep Clean', 'move-out': 'Move-Out',
 }
+// Chart-specific labels: completed surfaces the "unpaid" signal prominently
 const STATUS_LABELS: Record<string, string> = {
   stand_by: 'Stand-By', scheduled: 'Scheduled', in_progress: 'In Progress',
-  completed: 'Completed', cancelled: 'Cancelled', bump: 'Bumped', lock_out: 'Lock Out',
-}
-const STATUS_CHART_COLORS: Record<string, string> = {
-  stand_by: '#8B5CF6', scheduled: '#3B82F6', in_progress: '#F59E0B',
-  completed: '#10B981', cancelled: '#9CA3AF', bump: '#EAB308', lock_out: '#EF4444',
+  completed: 'Completed (unpaid)', paid: 'Paid', cancelled: 'Cancelled',
+  bump: 'Bumped', lock_out: 'Lock Out',
 }
 const CHART_COLORS = ['#2B5C78', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4']
 
@@ -253,7 +252,7 @@ export default function ReportsClient({ role, fromDate, toDate, currentTab, reve
                         outerRadius={80}
                       >
                         {jobs.jobsByStatus.map((entry) => (
-                          <Cell key={entry.status} fill={STATUS_CHART_COLORS[entry.status] ?? '#9CA3AF'} />
+                          <Cell key={entry.status} fill={JOB_STATUS_COLORS[entry.status] ?? '#9CA3AF'} />
                         ))}
                       </Pie>
                       <Tooltip formatter={(v, name) => [v, STATUS_LABELS[String(name)] ?? String(name)]} />

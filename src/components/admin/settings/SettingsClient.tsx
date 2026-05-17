@@ -12,7 +12,7 @@ import {
 } from '@/app/(admin)/settings/actions'
 import { getPayPeriod, type PayPeriodFrequency } from '@/lib/payPeriod'
 
-type Tab = 'business' | 'scheduling' | 'invoicing' | 'payroll' | 'reviews' | 'notifications' | 'automations'
+type Tab = 'business' | 'scheduling' | 'invoicing' | 'payroll' | 'reviews' | 'notifications' | 'automations' | 'import'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'business', label: 'Business & Branding' },
@@ -22,6 +22,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'reviews', label: 'Reviews' },
   { key: 'notifications', label: 'Notifications' },
   { key: 'automations', label: 'Automations' },
+  { key: 'import', label: 'Import' },
 ]
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => {
@@ -110,6 +111,7 @@ interface SettingsData {
   payPeriodFrequency: string
   payPeriodStartDay: number
   updatedBy: string | null
+  timezone: string
 }
 
 function useFormSave(action: (fd: FormData) => Promise<void>) {
@@ -230,7 +232,7 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
           )}
         </div>
 
-        <div className="px-4 sm:px-6 border-b border-gray-200 flex overflow-x-auto">
+        <div className="px-4 sm:px-6 border-b border-gray-200 flex overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
@@ -243,7 +245,7 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
       </div>
 
       {/* Content */}
-      <div className="px-4 sm:px-6 py-6 space-y-5 max-w-2xl">
+      <div className="px-4 sm:px-6 py-6 space-y-5">
 
         {/* ── Business & Branding ─────────────────────────────────────────────── */}
         {tab === 'business' && (
@@ -273,6 +275,18 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
                       <Input name="businessZip" defaultValue={settings.businessZip} placeholder="79938" />
                     </Field>
                   </div>
+                  <Field label="Timezone" hint="Used for scheduling display and CSV import date parsing.">
+                    <select name="timezone" defaultValue={settings.timezone}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/20 focus:border-brand-navy">
+                      <option value="America/New_York">Eastern Time (ET)</option>
+                      <option value="America/Chicago">Central Time (CT)</option>
+                      <option value="America/Denver">Mountain Time (MT)</option>
+                      <option value="America/Phoenix">Arizona (no DST)</option>
+                      <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                      <option value="America/Anchorage">Alaska Time (AKT)</option>
+                      <option value="Pacific/Honolulu">Hawaii Time (HT)</option>
+                    </select>
+                  </Field>
                 </div>
               </Section>
 
@@ -748,21 +762,23 @@ export default function SettingsClient({ settings }: { settings: SettingsData })
         )}
 
         {/* ── Import ──────────────────────────────────────────────────────────── */}
-        <Section title="Import">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-gray-700 font-medium">ZenMaid Data Import</p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                One-time migration tool for importing historical cleaners, clients, jobs, and assignments from ZenMaid.
-              </p>
+        {tab === 'import' && (
+          <Section title="Import">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm text-gray-700 font-medium">ZenMaid Data Import</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  One-time migration tool for importing historical cleaners, clients, jobs, and assignments from ZenMaid.
+                </p>
+              </div>
+              <Link href="/settings/import"
+                className="flex items-center gap-2 shrink-0 px-4 py-2 text-sm bg-brand-navy text-white rounded-lg hover:bg-brand-navy/90">
+                <Upload className="w-4 h-4" />
+                Open Import Tool
+              </Link>
             </div>
-            <Link href="/settings/import"
-              className="flex items-center gap-2 shrink-0 px-4 py-2 text-sm bg-brand-navy text-white rounded-lg hover:bg-brand-navy/90">
-              <Upload className="w-4 h-4" />
-              Open Import Tool
-            </Link>
-          </div>
-        </Section>
+          </Section>
+        )}
 
       </div>
     </div>

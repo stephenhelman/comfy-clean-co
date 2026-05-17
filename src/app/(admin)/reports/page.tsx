@@ -22,23 +22,19 @@ export default async function ReportsPage({ searchParams }: Props) {
   const fromDate = params.from ? startOfDay(new Date(params.from)) : defaultFrom
   const toDate = params.to ? endOfDay(new Date(params.to)) : defaultTo
 
-  const [paidInvoices, allInvoicesInRange, jobsInRange, assignmentsInRange, allActiveClients, newClientsRaw] = await Promise.all([
-    // Paid invoices for revenue reporting
-    db.invoice.findMany({
-      where: { status: 'paid', paidAt: { gte: fromDate, lte: toDate } },
-      include: { client: { select: { id: true, name: true } }, job: { select: { jobType: true } } },
-    }),
-    // All invoices in range for outstanding/written-off
+  const [allInvoicesInRange, jobsInRange, assignmentsInRange, allActiveClients, newClientsRaw] = await Promise.all([
+    // Invoices in range — used only for outstanding/written-off metrics
     db.invoice.findMany({
       where: { invoiceDate: { gte: fromDate, lte: toDate } },
       select: { status: true, amount: true, amountPaid: true },
     }),
-    // Jobs in range for activity stats
+    // Jobs in range — single source of truth for all revenue calculations
     db.job.findMany({
       where: { scheduledAt: { gte: fromDate, lte: toDate } },
       select: {
         id: true, status: true, jobType: true, clientId: true,
-        client: { select: { name: true } },
+        scheduledAt: true, paymentMethod: true,
+        client: { select: { id: true, name: true } },
         estimatedValue: true, actualRevenue: true,
       },
     }),
@@ -59,8 +55,10 @@ export default async function ReportsPage({ searchParams }: Props) {
     }),
   ])
 
-  // ── Revenue metrics ─────────────────────────────────────────────────────────
-  const totalRevenue = paidInvoices.reduce((s, i) => s + (i.amountPaid ?? i.amount), 0)
+  // ── Revenue metrics — source of truth: Job.actualRevenue where status = 'paid' ──
+  const paidJobs = jobsInRange.filter(j => j.status === 'paid' && j.actualRevenue != null)
+
+  const totalRevenue = paidJobs.reduce((s, j) => s + (j.actualRevenue ?? 0), 0)
   const totalOutstanding = allInvoicesInRange
     .filter(i => ['sent', 'pending', 'overdue'].includes(i.status))
     .reduce((s, i) => s + i.amount, 0)
@@ -68,29 +66,29 @@ export default async function ReportsPage({ searchParams }: Props) {
     .filter(i => i.status === 'written_off')
     .reduce((s, i) => s + i.amount, 0)
 
-  // Revenue by month
+  // Revenue by month (keyed on job scheduledAt)
   const monthMap = new Map<string, number>()
-  for (const inv of paidInvoices) {
-    const key = format(inv.paidAt!, 'MMM yyyy')
-    monthMap.set(key, (monthMap.get(key) ?? 0) + (inv.amountPaid ?? inv.amount))
+  for (const job of paidJobs) {
+    const key = format(new Date(job.scheduledAt), 'MMM yyyy')
+    monthMap.set(key, (monthMap.get(key) ?? 0) + (job.actualRevenue ?? 0))
   }
   const revenueByMonth = Array.from(monthMap.entries()).map(([month, revenue]) => ({ month, revenue }))
 
   // Revenue by job type
   const typeRevMap = new Map<string, { revenue: number; count: number }>()
-  for (const inv of paidInvoices) {
-    const t = inv.job.jobType
+  for (const job of paidJobs) {
+    const t = job.jobType
     const cur = typeRevMap.get(t) ?? { revenue: 0, count: 0 }
-    typeRevMap.set(t, { revenue: cur.revenue + (inv.amountPaid ?? inv.amount), count: cur.count + 1 })
+    typeRevMap.set(t, { revenue: cur.revenue + (job.actualRevenue ?? 0), count: cur.count + 1 })
   }
   const revenueByType = Array.from(typeRevMap.entries()).map(([type, d]) => ({ type, ...d }))
 
-  // Revenue by payment method
+  // Revenue by payment method (uses job.paymentMethod; null → 'other')
   const pmMap = new Map<string, { revenue: number; count: number }>()
-  for (const inv of paidInvoices) {
-    const m = inv.paymentType
+  for (const job of paidJobs) {
+    const m = job.paymentMethod ?? 'other'
     const cur = pmMap.get(m) ?? { revenue: 0, count: 0 }
-    pmMap.set(m, { revenue: cur.revenue + (inv.amountPaid ?? inv.amount), count: cur.count + 1 })
+    pmMap.set(m, { revenue: cur.revenue + (job.actualRevenue ?? 0), count: cur.count + 1 })
   }
   const revenueByPayment = Array.from(pmMap.entries()).map(([method, d]) => ({ method, ...d }))
 
@@ -130,11 +128,11 @@ export default async function ReportsPage({ searchParams }: Props) {
   // ── Client metrics ───────────────────────────────────────────────────────────
   // Top clients by paid revenue in range
   const clientRevMap = new Map<string, { name: string; revenue: number; jobCount: number }>()
-  for (const inv of paidInvoices) {
-    const cur = clientRevMap.get(inv.client.id) ?? { name: inv.client.name, revenue: 0, jobCount: 0 }
-    clientRevMap.set(inv.client.id, {
-      name: inv.client.name,
-      revenue: cur.revenue + (inv.amountPaid ?? inv.amount),
+  for (const job of paidJobs) {
+    const cur = clientRevMap.get(job.clientId) ?? { name: job.client.name, revenue: 0, jobCount: 0 }
+    clientRevMap.set(job.clientId, {
+      name: job.client.name,
+      revenue: cur.revenue + (job.actualRevenue ?? 0),
       jobCount: cur.jobCount + 1,
     })
   }

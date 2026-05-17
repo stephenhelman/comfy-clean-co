@@ -8,11 +8,16 @@ function statusPill(status: JobStatus) {
   const styles: Record<string, string> = {
     scheduled:   'bg-blue-100 text-blue-700',
     in_progress: 'bg-amber-100 text-amber-700',
-    completed:   'bg-green-100 text-green-700',
+    completed:   'bg-orange-100 text-orange-700',
+    paid:        'bg-green-100 text-green-700',
     cancelled:   'bg-gray-100 text-gray-500 line-through',
+    stand_by:    'bg-purple-100 text-purple-700',
+    bump:        'bg-gray-100 text-gray-500',
+    lock_out:    'bg-red-100 text-red-600',
   }
   const labels: Record<string, string> = {
-    scheduled: 'Scheduled', in_progress: 'In Progress', completed: 'Completed', cancelled: 'Cancelled',
+    scheduled: 'Scheduled', in_progress: 'In Progress', completed: 'Completed',
+    paid: 'Paid', cancelled: 'Cancelled', stand_by: 'Stand-By', bump: 'Bumped', lock_out: 'Lock Out',
   }
   return { cls: styles[status] ?? 'bg-gray-100 text-gray-500', label: labels[status] ?? status }
 }

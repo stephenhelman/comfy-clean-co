@@ -79,6 +79,12 @@ export default async function TimeclockPage({ searchParams }: Props) {
     durationMins: e.durationMins,
     laborCost: e.laborCost,
     hourlyRateSnapshot: e.hourlyRateSnapshot,
+    gpsBlocked: e.gpsBlocked,
+    gpsLat: e.gpsLat,
+    gpsLng: e.gpsLng,
+    clockOutGpsBlocked: e.clockOutGpsBlocked,
+    clockOutGpsLat: e.clockOutGpsLat,
+    clockOutGpsLng: e.clockOutGpsLng,
   }))
 
   return (

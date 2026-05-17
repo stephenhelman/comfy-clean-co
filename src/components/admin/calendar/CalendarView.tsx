@@ -10,6 +10,7 @@ import {
 } from 'date-fns'
 import { ChevronLeft, ChevronRight, X, RefreshCw } from 'lucide-react'
 import JobSlideOut from './JobSlideOut'
+import { JOB_STATUS_COLORS_BG } from '@/lib/statusColors'
 
 export type CalendarJob = {
   id: string
@@ -67,15 +68,6 @@ const CLEANER_COLORS = [
   '#F97316','#84CC16','#EC4899','#14B8A6','#6366F1','#A78BFA',
 ]
 
-const STATUS_COLORS: Record<string, string> = {
-  stand_by: '#DDD6FE',
-  scheduled: '#BFDBFE',
-  in_progress: '#FDE68A',
-  completed: '#BBF7D0',
-  cancelled: '#E2E8F0',
-  bump: '#FEF08A',
-  lock_out: '#FECACA',
-}
 
 const INVOICE_COLORS: Record<string, string> = {
   draft: '#E2E8F0',
@@ -89,7 +81,7 @@ const INVOICE_COLORS: Record<string, string> = {
 }
 
 function getJobColor(job: CalendarJob, mode: ColorMode): string {
-  if (mode === 'status') return STATUS_COLORS[job.status] ?? '#E2E8F0'
+  if (mode === 'status') return JOB_STATUS_COLORS_BG[job.status] ?? '#E2E8F0'
   if (mode === 'invoice') return job.invoice ? (INVOICE_COLORS[job.invoice.status] ?? '#E2E8F0') : '#E2E8F0'
   if (mode === 'recurrence') return job.recurringRule ? '#BFDBFE' : '#F1F5F9'
   // assignment mode

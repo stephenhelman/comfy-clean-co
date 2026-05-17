@@ -69,6 +69,54 @@ function parseDate(val: string): Date | null {
   return isNaN(d.getTime()) ? null : d
 }
 
+// Parse ZenMaid "MM/DD/YYYY" + "H:MM AM/PM" as a wall-clock time in the given
+// IANA timezone, returning the correct UTC instant. Uses the Intl API to resolve
+// DST — no external library needed.
+function parseDateTimeInTimezone(dateStr: string, timeStr: string, timezone: string): Date | null {
+  const dp = dateStr.trim().split('/')
+  if (dp.length !== 3) return null
+  const month = parseInt(dp[0], 10) - 1
+  const day   = parseInt(dp[1], 10)
+  const year  = parseInt(dp[2], 10)
+
+  const tm = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!tm) return null
+  let hour     = parseInt(tm[1], 10)
+  const minute = parseInt(tm[2], 10)
+  const ampm   = tm[3].toUpperCase()
+  if (ampm === 'PM' && hour !== 12) hour += 12
+  if (ampm === 'AM' && hour === 12) hour = 0
+
+  if ([month, day, year, hour, minute].some(isNaN)) return null
+
+  // Build a UTC candidate at the same wall-clock numbers, then compute the offset
+  // the target timezone actually has on that date, and adjust.
+  const candidate = new Date(Date.UTC(year, month, day, hour, minute))
+
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+    hour12: false,
+  })
+  const parts = fmt.formatToParts(candidate)
+  const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value ?? '0', 10)
+  let tzHour = get('hour')
+  if (tzHour === 24) tzHour = 0  // midnight edge case in some Intl implementations
+  const tzMinute = get('minute')
+  const tzYear   = get('year')
+  const tzMonth  = get('month') - 1
+  const tzDay    = get('day')
+
+  // offsetMs = how far the candidate UTC is from what the timezone shows
+  // adding it shifts the candidate so the timezone reads our target wall-clock time
+  const tzAsUTC     = Date.UTC(tzYear, tzMonth, tzDay, tzHour, tzMinute)
+  const targetAsUTC = Date.UTC(year, month, day, hour, minute)
+  const offsetMs    = targetAsUTC - tzAsUTC
+
+  return new Date(candidate.getTime() + offsetMs)
+}
+
 function parseFloat_(val: string): number {
   if (!val) return 0
   const n = parseFloat(val.replace(/[^0-9.-]/g, ''))
@@ -468,6 +516,9 @@ export async function importJobs(
 ): Promise<ImportResult<JobPreviewRow>> {
   await requireOwner()
 
+  const settings = await db.businessSettings.findFirst()
+  const timezone = settings?.timezone ?? 'America/Denver'
+
   const apptRows = parseCSV(appointmentCsvText)
   const contactRows = parseCSV(contactCsvText)
   const warnings: string[] = []
@@ -602,11 +653,13 @@ export async function importJobs(
       continue
     }
 
-    // Parse scheduledAt
-    const dateStr = `${row['Appointment Date'] ?? ''} ${row['Start Time'] ?? ''}`
-    const scheduledAt = parseDate(dateStr)
+    const scheduledAt = parseDateTimeInTimezone(
+      row['Appointment Date'] ?? '',
+      (row['Start Time'] ?? '').trim(),
+      timezone,
+    )
     if (!scheduledAt) {
-      warnings.push(`Appointment ${apptId}: invalid date "${dateStr}" — skipping`)
+      warnings.push(`Appointment ${apptId}: invalid date "${row['Appointment Date']} ${row['Start Time']}" — skipping`)
       continue
     }
 
@@ -685,7 +738,13 @@ export async function importJobs(
   if (!dryRun) {
     for (const j of toCreate) {
       const found = await db.job.findFirst({ where: { externalId: j.externalId } })
-      if (!found) {
+      if (found) {
+        // Update scheduledAt so re-running after a timezone fix corrects existing records
+        await db.job.update({
+          where: { id: found.id },
+          data: { scheduledAt: j.scheduledAt },
+        })
+      } else {
         await db.job.create({
           data: {
             externalId: j.externalId,
@@ -745,6 +804,9 @@ export async function importAssignments(
 ): Promise<ImportResult<AssignmentPreviewRow>> {
   await requireOwner()
 
+  const settings = await db.businessSettings.findFirst()
+  const timezone = settings?.timezone ?? 'America/Denver'
+
   const rows = parseCSV(csvText)
   const warnings: string[] = []
   const preview: AssignmentPreviewRow[] = []
@@ -759,12 +821,11 @@ export async function importAssignments(
   })
   const jobByExtId = new Map(jobs.map(j => [j.externalId, j]))
 
-  // Build a lookup: clientId + date-string + startTime → job
-  // (for assignment matching when Subscription ID ≠ Appointment ID)
-  const jobByDateKey = new Map<string, typeof jobs[number]>()
+  // Build a minute-level lookup: clientId + minute-epoch → job
+  const jobByMinuteKey = new Map<string, typeof jobs[number]>()
   for (const job of jobs) {
-    const dateKey = `${job.clientId}::${job.scheduledAt.toISOString().slice(0, 16)}`
-    jobByDateKey.set(dateKey, job)
+    const minuteEpoch = Math.floor(job.scheduledAt.getTime() / 60000)
+    jobByMinuteKey.set(`${job.clientId}::${minuteEpoch}`, job)
   }
 
   // Load existing assignments for dedup check
@@ -807,22 +868,23 @@ export async function importAssignments(
       continue
     }
 
-    // Match job by date + customer
-    // Try direct externalId match first via Appointment ID column
-    const apptId = (row['Appointment ID'] ?? '').trim()
-    let job = apptId ? jobByExtId.get(apptId) : undefined
+    // Match job: try Appointment ID / Subscription ID columns first for direct externalId hit,
+    // then fall back to Customer ID + Appointment Date + Appointment Start Time (minute-level)
+    const directId = (row['Appointment ID'] ?? row['Subscription ID'] ?? '').trim()
+    let job = directId ? jobByExtId.get(directId) : undefined
+
+    const apptDate = (row['Appointment Date'] ?? '').trim()
+    // Assignment CSV uses "Appointment Start Time"; fall back to "Start Time"
+    const startTime = (row['Appointment Start Time'] ?? row['Start Time'] ?? '').trim()
 
     if (!job) {
-      // Fall back to customer + date matching
       const custId = (row['Customer ID'] ?? '').trim()
       const client = await db.client.findFirst({ where: { externalId: custId }, select: { id: true, name: true } })
       if (client) {
-        const apptDate = (row['Appointment Date'] ?? '').trim()
-        const startTime = (row['Start Time'] ?? '').trim()
-        const dt = parseDate(`${apptDate} ${startTime}`)
+        const dt = parseDateTimeInTimezone(apptDate, startTime, timezone)
         if (dt) {
-          const dateKey = `${client.id}::${dt.toISOString().slice(0, 16)}`
-          job = jobByDateKey.get(dateKey)
+          const minuteEpoch = Math.floor(dt.getTime() / 60000)
+          job = jobByMinuteKey.get(`${client.id}::${minuteEpoch}`)
         }
       }
     }
@@ -860,12 +922,11 @@ export async function importAssignments(
       continue
     }
 
-    // Parse times
-    const apptDate = (row['Appointment Date'] ?? '').trim()
+    // Parse clock-in / clock-out in business timezone (apptDate already declared above)
     const timeIn = (row['Time In'] ?? '').trim()
     const timeOut = (row['Time Out'] ?? '').trim()
-    const clockedInAt = parseDate(`${apptDate} ${timeIn}`)
-    const clockedOutAt = parseDate(`${apptDate} ${timeOut}`)
+    const clockedInAt = timeIn ? parseDateTimeInTimezone(apptDate, timeIn, timezone) : null
+    const clockedOutAt = timeOut ? parseDateTimeInTimezone(apptDate, timeOut, timezone) : null
 
     const totalSecs = parseFloat_(row['Total Time in Seconds'] ?? '')
     const durationMins = totalSecs > 0 ? Math.round(totalSecs / 60) : null

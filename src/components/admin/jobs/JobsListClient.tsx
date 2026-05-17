@@ -7,19 +7,11 @@ import { Map, List, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'luci
 import dynamic from 'next/dynamic'
 import JobSlideOut from '@/components/admin/calendar/JobSlideOut'
 import type { CalendarJob } from '@/components/admin/calendar/CalendarView'
+import { JOB_STATUS_LABELS, JOB_STATUS_TAILWIND } from '@/lib/statusColors'
 
 const JobsMap = dynamic(() => import('./JobsMap'), { ssr: false })
 
-const JOB_STATUS_LABELS: Record<string, string> = {
-  stand_by: 'Stand-By', scheduled: 'Scheduled', in_progress: 'In Progress',
-  completed: 'Completed', cancelled: 'Cancelled', bump: 'Bumped', lock_out: 'Lock Out',
-}
-const JOB_STATUS_COLORS: Record<string, string> = {
-  stand_by: 'bg-purple-100 text-purple-700', scheduled: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-amber-100 text-amber-700', completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-gray-100 text-gray-500', bump: 'bg-yellow-100 text-yellow-700',
-  lock_out: 'bg-red-100 text-red-600',
-}
+const JOB_STATUS_COLORS = JOB_STATUS_TAILWIND
 const INVOICE_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft', sent: 'Sent', pending: 'Pending Confirmation', paid: 'Paid',
   overdue: 'Overdue', voided: 'Voided', refunded: 'Refunded', partially_refunded: 'Partial Refund',

@@ -1,10 +1,67 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { format, parseISO, formatDuration, intervalToDuration } from 'date-fns'
-import { ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
+import { ChevronLeft, ChevronRight, AlertTriangle, MapPin, MapPinOff } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { adminEditClockOut, adminForceClockOut } from '@/app/(admin)/timeclock/actions'
+
+const MapPopup = dynamic(
+  () => import('@/components/admin/timeclock/MapPopup'),
+  { ssr: false },
+)
+
+function GpsIndicator({ clocked, lat, lng, blocked, address }: {
+  clocked: boolean
+  lat: number | null
+  lng: number | null
+  blocked: boolean
+  address: string
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    if (!open) return
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  // State C — not clocked in
+  if (!clocked) return null
+
+  // State A — real coordinates
+  if (lat != null && lng != null) {
+    return (
+      <div ref={ref} className="relative inline-flex justify-center">
+        <button
+          onClick={() => setOpen(v => !v)}
+          title={`${lat.toFixed(5)}, ${lng.toFixed(5)}`}
+          className="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-teal-50"
+        >
+          <MapPin className="w-3.5 h-3.5 text-teal-500" />
+        </button>
+        {open && (
+          <div className="absolute z-50 top-full mt-2 left-1/2 -translate-x-1/2">
+            <MapPopup lat={lat} lng={lng} address={address} />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // State B — clocked in but no coordinates (blocked or unavailable)
+  return (
+    <span title="Location unavailable" className="inline-flex justify-center">
+      <MapPinOff className="w-3.5 h-3.5 text-gray-400" />
+    </span>
+  )
+}
 
 export interface TimeclockEntry {
   id: string
@@ -20,6 +77,12 @@ export interface TimeclockEntry {
   durationMins: number | null
   laborCost: number | null
   hourlyRateSnapshot: number | null
+  gpsBlocked: boolean
+  gpsLat: number | null
+  gpsLng: number | null
+  clockOutGpsBlocked: boolean
+  clockOutGpsLat: number | null
+  clockOutGpsLng: number | null
 }
 
 interface Props {
@@ -77,7 +140,7 @@ function InlineEditForm({ entry, onDone }: { entry: TimeclockEntry; onDone: () =
     : undefined
 
   return (
-    <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+    <div className="w-80 bg-white border border-amber-200 rounded-xl shadow-xl p-3 space-y-2">
       <div className="flex flex-wrap gap-2 items-end">
         <div>
           <label className="block text-xs text-amber-700 mb-1">Clock-Out Time</label>
@@ -275,6 +338,7 @@ export default function TimeclockTable({ entries, total, page, pageSize, cleaner
                 <th className="text-left px-4 py-2.5 font-semibold text-gray-600 hidden lg:table-cell">Duration</th>
                 <th className="text-right px-4 py-2.5 font-semibold text-gray-600 hidden lg:table-cell">Labor Cost</th>
                 <th className="text-right px-4 py-2.5 font-semibold text-gray-600 hidden lg:table-cell">Rate</th>
+                <th className="text-center px-4 py-2.5 font-semibold text-gray-600 hidden lg:table-cell">GPS</th>
                 <th className="w-8" />
               </tr>
             </thead>
@@ -318,12 +382,7 @@ export default function TimeclockTable({ entries, total, page, pageSize, cleaner
                           <div className="text-xs text-gray-500">{format(parseISO(entry.clockedOutAt), 'h:mm a')}</div>
                         </>
                       ) : isOpen ? (
-                        <div>
-                          <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">OPEN</span>
-                          {isEditing && (
-                            <InlineEditForm entry={entry} onDone={() => setEditingId(null)} />
-                          )}
-                        </div>
+                        <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">OPEN</span>
                       ) : (
                         <span className="text-gray-400 text-xs">—</span>
                       )}
@@ -337,33 +396,35 @@ export default function TimeclockTable({ entries, total, page, pageSize, cleaner
                     <td className="px-4 py-3 hidden lg:table-cell text-right text-gray-500 text-xs">
                       {entry.hourlyRateSnapshot != null ? `$${entry.hourlyRateSnapshot}/hr` : '—'}
                     </td>
+                    <td className="px-4 py-3 hidden lg:table-cell text-center">
+                      <GpsIndicator
+                        clocked={!!entry.clockedInAt}
+                        lat={entry.gpsLat}
+                        lng={entry.gpsLng}
+                        blocked={entry.gpsBlocked}
+                        address={`${entry.serviceAddress}, ${entry.serviceCity}`}
+                      />
+                    </td>
                     <td className="px-4 py-3 text-right">
-                      {isOpen && !isEditing && (
-                        <button
-                          onClick={() => setEditingId(entry.id)}
-                          className="text-xs text-amber-700 hover:text-amber-900 font-medium px-2 py-1 rounded hover:bg-amber-100"
-                        >
-                          Edit
-                        </button>
-                      )}
-                      {isOpen && isEditing && (
-                        <button
-                          onClick={() => setEditingId(null)}
-                          className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded"
-                        >
-                          ✕
-                        </button>
-                      )}
-                      {!isOpen && entry.clockedOutAt && (
-                        <button
-                          onClick={() => setEditingId(isEditing ? null : entry.id)}
-                          className="text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded hover:bg-gray-100"
-                        >
-                          {isEditing ? '✕' : 'Edit'}
-                        </button>
-                      )}
-                      {!isOpen && isEditing && (
-                        <InlineEditForm entry={entry} onDone={() => setEditingId(null)} />
+                      {(isOpen || !!entry.clockedOutAt) && (
+                        <div className="relative inline-flex justify-end">
+                          <button
+                            onClick={() => setEditingId(isEditing ? null : entry.id)}
+                            className={isEditing
+                              ? 'text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded'
+                              : isOpen
+                                ? 'text-xs text-amber-700 hover:text-amber-900 font-medium px-2 py-1 rounded hover:bg-amber-100'
+                                : 'text-xs text-gray-400 hover:text-gray-600 font-medium px-2 py-1 rounded hover:bg-gray-100'
+                            }
+                          >
+                            {isEditing ? '✕' : 'Edit'}
+                          </button>
+                          {isEditing && (
+                            <div className="absolute z-50 top-full right-0 mt-1">
+                              <InlineEditForm entry={entry} onDone={() => setEditingId(null)} />
+                            </div>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
