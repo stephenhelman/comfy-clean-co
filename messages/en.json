@@ -100,10 +100,17 @@
     "name": "Full Name",
     "phone": "Phone Number",
     "email": "Email Address",
-    "address": "Service Address",
     "division": "Division",
     "service": "Service",
     "servicePlaceholder": "Select a service",
+    "preferredDate": "Preferred Date",
+    "preferredTime": "Preferred Time",
+    "timeNoPreference": "No preference",
+    "times": {
+      "morning": "Morning (8am–12pm)",
+      "afternoon": "Afternoon (12pm–4pm)",
+      "flexible": "Flexible"
+    },
     "notes": "Special Notes (optional)",
     "language": "Communication Language",
     "submit": "Request My Free Visit →",

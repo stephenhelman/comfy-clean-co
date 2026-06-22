@@ -100,10 +100,17 @@
     "name": "Nombre Completo",
     "phone": "Número de Teléfono",
     "email": "Correo Electrónico",
-    "address": "Dirección del Servicio",
     "division": "Division",
     "service": "Service",
     "servicePlaceholder": "Select a service",
+    "preferredDate": "Preferred Date",
+    "preferredTime": "Preferred Time",
+    "timeNoPreference": "No preference",
+    "times": {
+      "morning": "Morning (8am–12pm)",
+      "afternoon": "Afternoon (12pm–4pm)",
+      "flexible": "Flexible"
+    },
     "notes": "Notas Especiales (opcional)",
     "language": "Idioma de Comunicación",
     "submit": "Solicitar Mi Visita Gratuita →",
