@@ -3,6 +3,8 @@
     "home": "Inicio",
     "services": "Servicios",
     "about": "Nosotros",
+    "reviews": "Reviews",
+    "gallery": "Gallery",
     "book": "Reservar",
     "contact": "Contacto"
   },
@@ -92,7 +94,33 @@
   "serviceArea": {
     "label": "DÓNDE SERVIMOS",
     "headline": "Sirviendo el Este de El Paso",
-    "desc": "Servimos con orgullo el Este de El Paso, incluyendo Horizon City, Socorro y comunidades cercanas."
+    "descTemplate": "We proudly serve {cities}, and surrounding communities."
+  },
+  "reviews": {
+    "metaTitle": "Reviews",
+    "metaDescription": "See what El Paso homeowners and businesses say about Comfy Clean Co.",
+    "label": "WHAT CLIENTS SAY",
+    "headline": "Reviews",
+    "subhead": "Real feedback from the homes and businesses we clean across Far East El Paso.",
+    "fromGoogle": "Reviews from Google",
+    "viaGoogle": "via Google",
+    "reviewUsCta": "Review us on Google",
+    "ratingCount": "{count} Google reviews",
+    "emptyTitle": "Be our first review",
+    "emptyBody": "We're just getting started online. If we've cleaned for you, a quick Google review helps your neighbors find us.",
+    "prev": "Previous reviews",
+    "next": "Next reviews"
+  },
+  "gallery": {
+    "metaTitle": "Gallery",
+    "metaDescription": "Before-and-after results from Comfy Clean Co. in Far East El Paso, TX.",
+    "label": "OUR WORK",
+    "headline": "Before & After",
+    "subhead": "A look at the difference a Comfy Clean makes, from everyday tidies to deep cleans.",
+    "before": "Before",
+    "after": "After",
+    "emptyTitle": "Photos coming soon",
+    "emptyBody": "We're putting together before-and-after sets from recent jobs. Check back shortly."
   },
   "book": {
     "label": "COMENZAR",
@@ -139,6 +167,9 @@
   "footer": {
     "tagline": "Clean · Fresh · Reliable",
     "copyright": "© 2025 Comfy Clean Co. Todos los derechos reservados.",
-    "location": "Este de El Paso, TX"
+    "location": "Este de El Paso, TX",
+    "licensed": "Licensed",
+    "insured": "Insured",
+    "bonded": "Bonded"
   }
 }
