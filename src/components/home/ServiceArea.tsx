@@ -1,17 +1,22 @@
 import { MapPin } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import Reveal from "@/components/ui/Reveal";
+import { SERVICE_AREA_CITIES } from "@/lib/businessInfo";
 
 interface ServiceAreaProps {
   t: {
     label: string;
     headline: string;
-    desc: string;
+    /** Template with a {cities} placeholder so chips + prose share one source. */
+    descTemplate: string;
   };
 }
 
 export default function ServiceArea({ t }: ServiceAreaProps) {
-  const areas = ["Far East El Paso", "Horizon City", "Socorro", "Clint", "Fabens"];
+  // Single source of truth (businessInfo.SERVICE_AREA_CITIES) drives BOTH the
+  // chips and the prose, so they can't diverge again.
+  const cities = [...SERVICE_AREA_CITIES];
+  const prose = t.descTemplate.replace("{cities}", cities.join(", "));
 
   return (
     <section className="section-py bg-brand-gray-light">
@@ -21,10 +26,10 @@ export default function ServiceArea({ t }: ServiceAreaProps) {
           {t.headline}
         </h2>
         <p className="mb-10 max-w-2xl font-inter text-lg leading-relaxed text-brand-navy-dark/90">
-          {t.desc}
+          {prose}
         </p>
         <div className="flex flex-wrap gap-3">
-          {areas.map((area, i) => (
+          {cities.map((area, i) => (
             <Reveal key={area} delay={i * 50}>
               <div className="flex items-center gap-2 rounded-full border border-brand-green/30 bg-white px-4 py-2 shadow-sm transition-colors duration-200 hover:border-brand-green hover:bg-brand-green-pale">
                 <MapPin size={14} className="shrink-0 text-brand-green" />
