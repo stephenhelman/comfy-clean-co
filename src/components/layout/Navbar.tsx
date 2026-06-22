@@ -8,16 +8,19 @@ import BrandLogo from "@/components/ui/BrandLogo";
 
 interface NavbarProps {
   locale: string;
+  phone: { display: string; href: string };
   navLabels: {
     home: string;
     services: string;
     about: string;
+    reviews: string;
+    gallery: string;
     book: string;
     contact: string;
   };
 }
 
-export default function Navbar({ locale, navLabels }: NavbarProps) {
+export default function Navbar({ locale, phone, navLabels }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const otherLocale = locale === "en" ? "es" : "en";
@@ -27,6 +30,8 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
     { href: `/${locale}`, label: navLabels.home },
     { href: `/${locale}/services`, label: navLabels.services },
     { href: `/${locale}/about`, label: navLabels.about },
+    { href: `/${locale}/reviews`, label: navLabels.reviews },
+    { href: `/${locale}/gallery`, label: navLabels.gallery },
     { href: `/${locale}/contact`, label: navLabels.contact },
   ];
 
@@ -40,14 +45,13 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden items-center gap-6 md:flex">
-            {/* Phone */}
+          <nav className="hidden items-center gap-5 lg:flex">
             <a
-              href="tel:+19159795151"
+              href={phone.href}
               className="flex items-center gap-1.5 font-poppins text-sm font-bold text-white transition-colors hover:text-brand-green-light"
             >
               <Phone size={15} />
-              (915) 979-5151
+              {phone.display}
             </a>
 
             {links.map((link) => (
@@ -79,7 +83,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
 
           {/* Mobile menu button */}
           <button
-            className="relative p-2 text-white md:hidden"
+            className="relative p-2 text-white lg:hidden"
             onClick={() => setMobileOpen((o) => !o)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
@@ -99,7 +103,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
       {/* Mobile menu — animated dropdown (transform + opacity, no layout jank) */}
       <div
         id="mobile-menu"
-        className={`origin-top overflow-hidden border-t border-white/10 bg-brand-navy-dark transition-[opacity,transform] duration-200 ease-out-quart md:hidden ${
+        className={`origin-top overflow-hidden border-t border-white/10 bg-brand-navy-dark transition-[opacity,transform] duration-200 ease-out-quart lg:hidden ${
           mobileOpen
             ? "translate-y-0 opacity-100"
             : "pointer-events-none -translate-y-2 opacity-0"
@@ -108,11 +112,11 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
       >
         <div className="flex flex-col gap-4 px-4 py-4">
           <a
-            href="tel:+19159795151"
+            href={phone.href}
             className="flex items-center gap-2 font-poppins text-sm font-bold text-brand-green-light"
           >
             <Phone size={15} />
-            (915) 979-5151
+            {phone.display}
           </a>
           {links.map((link) => (
             <Link

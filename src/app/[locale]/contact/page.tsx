@@ -4,6 +4,8 @@ import { Phone, Mail, MapPin } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import Reveal from "@/components/ui/Reveal";
 import ContactForm from "@/components/contact/ContactForm";
+import { getBusinessPhone } from "@/lib/businessData";
+import { formatPhone, phoneHref } from "@/lib/businessInfo";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -22,9 +24,10 @@ export default async function ContactPage({ params }: PageProps) {
   const { locale } = await params;
   const messages = await getMessages({ locale }) as Record<string, Record<string, unknown>>;
   const t = messages.contact ?? {};
+  const rawPhone = await getBusinessPhone();
 
   const infoCards = [
-    { icon: Phone, label: (t.phone_label as string) ?? "Phone", value: "915-979-5151", href: "tel:+19159795151" },
+    { icon: Phone, label: (t.phone_label as string) ?? "Phone", value: formatPhone(rawPhone), href: phoneHref(rawPhone) },
     { icon: Mail, label: (t.email_label as string) ?? "Email", value: "info@comfycleanco.com", href: "mailto:info@comfycleanco.com" },
     { icon: MapPin, label: (t.location_label as string) ?? "Service Area", value: (t.location_value as string) ?? "" },
   ];

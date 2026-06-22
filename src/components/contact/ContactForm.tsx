@@ -115,7 +115,7 @@ export default function ContactForm() {
           Thanks {fields.name.split(' ')[0]}, we&apos;ll be in touch soon!
         </p>
         <p className="font-inter text-sm text-brand-navy-dark">
-          We typically respond within a few hours. You can also reach us at <strong>915-979-5151</strong>.
+          We typically respond within a few hours. You can also reach us at <strong>(915) 224-2995</strong>.
         </p>
       </div>
     )

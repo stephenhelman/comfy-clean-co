@@ -5,6 +5,8 @@ import { Poppins, Inter } from "next/font/google";
 import "@/app/globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { getBusinessPhone } from "@/lib/businessData";
+import { formatPhone, phoneHref } from "@/lib/businessInfo";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -41,6 +43,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
   const nav = (messages as Record<string, Record<string, string>>).nav ?? {};
   const footer = (messages as Record<string, Record<string, string>>).footer ?? {};
 
+  const rawPhone = await getBusinessPhone();
+  const phone = { display: formatPhone(rawPhone), href: phoneHref(rawPhone) };
+
   return (
     <html lang={locale} className={`${poppins.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
@@ -50,10 +55,13 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Navbar
             locale={locale}
+            phone={phone}
             navLabels={{
               home: nav.home ?? "Home",
               services: nav.services ?? "Services",
               about: nav.about ?? "About",
+              reviews: nav.reviews ?? "Reviews",
+              gallery: nav.gallery ?? "Gallery",
               book: nav.book ?? "Book Now",
               contact: nav.contact ?? "Contact",
             }}
@@ -61,15 +69,21 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
           <main>{children}</main>
           <Footer
             locale={locale}
+            phone={phone}
             t={{
               tagline: footer.tagline ?? "Clean · Fresh · Reliable",
               copyright: footer.copyright ?? "© 2025 Comfy Clean Co.",
               location: footer.location ?? "Far East El Paso, TX",
+              licensed: footer.licensed ?? "Licensed",
+              insured: footer.insured ?? "Insured",
+              bonded: footer.bonded ?? "Bonded",
             }}
             navLabels={{
               home: nav.home ?? "Home",
               services: nav.services ?? "Services",
               about: nav.about ?? "About",
+              reviews: nav.reviews ?? "Reviews",
+              gallery: nav.gallery ?? "Gallery",
               contact: nav.contact ?? "Contact",
             }}
           />

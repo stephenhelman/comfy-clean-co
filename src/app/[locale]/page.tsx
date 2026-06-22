@@ -6,6 +6,9 @@ import ServicesOverview from "@/components/home/ServicesOverview";
 import ServiceArea from "@/components/home/ServiceArea";
 import WaveDivider from "@/components/ui/WaveDivider";
 import BookingBand from "@/components/book/BookingBand";
+import { getBusinessPhone } from "@/lib/businessData";
+import { phoneHref } from "@/lib/businessInfo";
+import { SERVICE_AREA_CITIES } from "@/lib/businessInfo";
 
 export const metadata: Metadata = {
   title: "Comfy Clean Co | Professional Cleaning Services in El Paso, TX",
@@ -14,29 +17,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://comfycleanco.com",
   },
-};
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": ["LocalBusiness", "CleaningService"],
-  name: "Comfy Clean Co",
-  url: "https://comfycleanco.com",
-  // TODO: Replace with real phone number
-  telephone: "915-979-5151",
-  email: "info@comfycleanco.com",
-  description:
-    "Professional residential and commercial cleaning in Far East El Paso, TX. Trusted house cleaning, deep clean, move-out, and commercial services. Book today.",
-  areaServed: ["Far East El Paso", "El Paso", "TX"],
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "El Paso",
-    addressRegion: "TX",
-    addressCountry: "US",
-  },
-  priceRange: "$$",
-  openingHours: ["Mo-Sa 08:00-18:00"],
-  // TODO: Replace with real Google Business Profile and Facebook URLs
-  sameAs: ["", ""],
 };
 
 interface PageProps {
@@ -52,6 +32,29 @@ export default async function HomePage({ params }: PageProps) {
   const services = messages.services ?? {};
   const serviceArea = messages.serviceArea ?? {};
   const book = messages.book ?? {};
+
+  const rawPhone = await getBusinessPhone();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "CleaningService"],
+    name: "Comfy Clean Co",
+    url: "https://comfycleanco.com",
+    telephone: phoneHref(rawPhone).replace("tel:", ""),
+    email: "info@comfycleanco.com",
+    description:
+      "Professional residential and commercial cleaning in Far East El Paso, TX. Trusted house cleaning, deep clean, move-out, and commercial services. Book today.",
+    areaServed: [...SERVICE_AREA_CITIES, "El Paso", "TX"],
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "El Paso",
+      addressRegion: "TX",
+      addressCountry: "US",
+    },
+    priceRange: "$$",
+    openingHours: ["Mo-Sa 08:00-18:00"],
+    // TODO: Replace with real Google Business Profile and Facebook URLs (Sprint 3)
+    sameAs: ["", ""],
+  };
 
   return (
     <>
