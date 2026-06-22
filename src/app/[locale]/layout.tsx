@@ -42,7 +42,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
   const footer = (messages as Record<string, Record<string, string>>).footer ?? {};
 
   return (
-    <html lang={locale} className={`${poppins.variable} ${inter.variable}`}>
+    <html lang={locale} className={`${poppins.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: jsClassScript }} />
       </head>

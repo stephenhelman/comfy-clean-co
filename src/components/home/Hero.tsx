@@ -49,15 +49,16 @@ export default function Hero({
         />
 
         <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-10 px-4 py-16 sm:px-6 lg:flex-row lg:gap-14 lg:px-8 lg:py-0">
-          {/* Left — photo */}
-          <div className="relative h-72 w-full shrink-0 overflow-hidden rounded-3xl bg-brand-green-pale shadow-xl shadow-brand-navy/10 sm:h-96 lg:h-[600px] lg:w-1/2">
+          {/* Left — photo (container matches the image's natural ~4:3 ratio so it
+              fills without distortion or heavy cropping) */}
+          <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-3xl bg-brand-green-pale shadow-xl shadow-brand-navy/10 lg:w-1/2">
             <Image
               src="/images/hero-cleaning.jpg"
               alt="Comfy Clean Co. cleaning team ready for a home visit"
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover object-[center_30%]"
+              className="object-cover object-center"
             />
           </div>
 
