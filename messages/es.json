@@ -27,12 +27,67 @@
   "services": {
     "label": "LO QUE OFRECEMOS",
     "headline": "Nuestros Servicios de Limpieza",
-    "residential_title": "Limpieza Residencial",
-    "residential_desc": "Limpieza profunda, estándar, mudanza — adaptada a tu hogar.",
-    "commercial_title": "Limpieza Comercial",
-    "commercial_desc": "Oficinas, locales comerciales, espacios pequeños — limpiados correctamente.",
-    "recurring_title": "Planes Recurrentes",
-    "recurring_desc": "Horarios semanales, quincenales y mensuales disponibles."
+    "tabs": {
+      "residential": "Residential",
+      "commercial": "Commercial"
+    },
+    "items": {
+      "standard": {
+        "title": "Standard Cleaning",
+        "desc": "Routine top-to-bottom cleaning that keeps your home consistently fresh.",
+        "features": ["Dusting & surfaces", "Floors vacuumed & mopped", "Kitchens & bathrooms"]
+      },
+      "deep-clean": {
+        "title": "Deep Clean",
+        "desc": "A detailed, intensive clean that reaches the spots a standard visit doesn't.",
+        "features": ["Baseboards & detail work", "Buildup & grime removal", "Inside appliances on request"]
+      },
+      "airbnb": {
+        "title": "Airbnb / Turnover",
+        "desc": "Fast, reliable turnovers that get your short-term rental guest-ready.",
+        "features": ["Guest-ready reset", "Linens & restock friendly", "Flexible scheduling"]
+      },
+      "move-in-out": {
+        "title": "Move-in / Move-out",
+        "desc": "A thorough clean for empty homes at the start or end of a lease.",
+        "features": ["Whole-home detail", "Inside cabinets & closets", "Lease-ready finish"]
+      },
+      "kitchen-bath": {
+        "title": "Kitchen & Bath Cleaning",
+        "desc": "Focused cleaning for the hardest-working rooms in the house.",
+        "features": ["Counters & fixtures", "Sinks, tubs & showers", "Floors & surfaces"]
+      },
+      "laundry": {
+        "title": "Laundry Assistance",
+        "desc": "Wash, dry, and fold help added to your cleaning visit.",
+        "features": ["Wash & dry", "Fold & tidy", "Add-on to any clean"]
+      },
+      "custom": {
+        "title": "Custom Cleaning",
+        "desc": "Tell us what you need and we'll build a clean around it.",
+        "features": ["Tailored checklist", "One-time or recurring", "Priced to your needs"]
+      },
+      "office": {
+        "title": "Office Buildings",
+        "desc": "Dependable cleaning that keeps your workplace presentable and healthy.",
+        "features": ["Workstations & common areas", "Restrooms & breakrooms", "After-hours available"]
+      },
+      "churches": {
+        "title": "Churches",
+        "desc": "Sunday-ready cleaning so your congregation walks into a spotless space.",
+        "features": ["Sanctuary & seating", "Restrooms & fellowship areas", "Scheduled around services"]
+      },
+      "retail": {
+        "title": "Retail Spaces",
+        "desc": "Clean, welcoming storefronts that make the right first impression.",
+        "features": ["Sales floor & entry", "Fitting rooms & counters", "Flexible hours"]
+      },
+      "small-commercial": {
+        "title": "Small Commercial",
+        "desc": "Right-sized cleaning for small offices, studios, and shops.",
+        "features": ["Flexible scope", "Recurring or one-time", "Local & reliable"]
+      }
+    }
   },
   "serviceArea": {
     "label": "DÓNDE SERVIMOS",
@@ -46,37 +101,17 @@
     "phone": "Número de Teléfono",
     "email": "Correo Electrónico",
     "address": "Dirección del Servicio",
-    "serviceType": "Tipo de Servicio",
-    "frequency": "Frecuencia",
-    "homeSize": "Tamaño del Hogar / Espacio",
-    "preferredDate": "Fecha Preferida",
-    "preferredTime": "Hora Preferida",
+    "division": "Division",
+    "service": "Service",
+    "servicePlaceholder": "Select a service",
     "notes": "Notas Especiales (opcional)",
     "language": "Idioma de Comunicación",
     "submit": "Solicitar Mi Visita Gratuita →",
     "success": "¡Gracias! Recibimos tu solicitud y te llamaremos en 24 horas para confirmar tu visita.",
     "error": "Algo salió mal. Por favor intenta de nuevo o llámanos directamente.",
-    "serviceTypes": {
-      "residential": "Limpieza Residencial",
-      "commercial": "Limpieza Comercial"
-    },
-    "frequencies": {
-      "oneTime": "Una vez",
-      "weekly": "Semanal",
-      "biweekly": "Quincenal",
-      "monthly": "Mensual"
-    },
-    "homeSizes": {
-      "studio": "Estudio / Pequeño (menos de 800 sq ft)",
-      "medium": "Mediano (800–1,400 sq ft)",
-      "large": "Grande (1,400–2,200 sq ft)",
-      "xlarge": "Extra Grande (2,200+ sq ft)",
-      "commercial": "Comercial — por favor describe abajo"
-    },
-    "times": {
-      "morning": "Mañana (8am–12pm)",
-      "afternoon": "Tarde (12pm–4pm)",
-      "flexible": "Flexible"
+    "divisions": {
+      "residential": "Residential",
+      "commercial": "Commercial"
     }
   },
   "about": {
