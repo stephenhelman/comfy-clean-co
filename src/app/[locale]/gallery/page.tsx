@@ -5,6 +5,7 @@ import SectionLabel from "@/components/ui/SectionLabel";
 import Reveal from "@/components/ui/Reveal";
 import BeforeAfterCard from "@/components/gallery/BeforeAfterCard";
 import { getGalleryItems } from "@/lib/gallery";
+import { localeAlternates } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "https://comfycleanco.com/gallery" },
+    alternates: localeAlternates(locale, "/gallery"),
   };
 }
 

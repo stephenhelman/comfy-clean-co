@@ -3,18 +3,20 @@ import { getMessages } from "next-intl/server";
 import SectionLabel from "@/components/ui/SectionLabel";
 import ServicesTabs from "@/components/services/ServicesTabs";
 import BookingBand from "@/components/book/BookingBand";
-
-export const metadata: Metadata = {
-  title: "Services",
-  description:
-    "Explore Comfy Clean Co's residential and commercial cleaning services in Far East El Paso, TX. Deep cleans, recurring plans, move-out cleaning, and more.",
-  alternates: {
-    canonical: "https://comfycleanco.com/services",
-  },
-};
+import { localeAlternates } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: "Services",
+    description:
+      "Explore Comfy Clean Co's residential and commercial cleaning services in Far East El Paso, TX. Deep cleans, recurring plans, move-out cleaning, and more.",
+    alternates: localeAlternates(locale, "/services"),
+  };
 }
 
 export default async function ServicesPage({ params }: PageProps) {
@@ -32,7 +34,7 @@ export default async function ServicesPage({ params }: PageProps) {
             {(t.headline as string) ?? "Our Cleaning Services"}
           </h1>
           <p className="mb-12 max-w-2xl font-inter text-lg leading-relaxed text-brand-navy-dark/90">
-            Professional residential and commercial cleaning tailored to your needs. Every service includes our reliability guarantee — we show up on time or your next visit is free.
+            {(t.intro as string) ?? "Professional residential and commercial cleaning tailored to your needs. Every service includes our reliability guarantee — we show up on time or your next visit is free."}
           </p>
           <ServicesTabs />
         </div>

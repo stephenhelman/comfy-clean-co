@@ -3,18 +3,20 @@ import { getMessages } from "next-intl/server";
 import { Phone, Mail, MapPin } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import Reveal from "@/components/ui/Reveal";
-import ContactForm from "@/components/contact/ContactForm";
+import BookingForm from "@/components/book/BookingForm";
 import { getBusinessPhone } from "@/lib/businessData";
 import { formatPhone, phoneHref } from "@/lib/businessInfo";
+import { localeAlternates } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description:
-    "Get in touch with Comfy Clean Co in Far East El Paso, TX. Call, email, or fill out our contact form and we'll respond within 24 hours.",
-  alternates: {
-    canonical: "https://comfycleanco.com/contact",
-  },
-};
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: "Contact",
+    description:
+      "Get in touch with Comfy Clean Co in Far East El Paso, TX. Call, email, or fill out our contact form and we'll respond within 24 hours.",
+    alternates: localeAlternates(locale, "/contact"),
+  };
+}
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -24,6 +26,7 @@ export default async function ContactPage({ params }: PageProps) {
   const { locale } = await params;
   const messages = await getMessages({ locale }) as Record<string, Record<string, unknown>>;
   const t = messages.contact ?? {};
+  const book = messages.book ?? {};
   const rawPhone = await getBusinessPhone();
 
   const infoCards = [
@@ -77,15 +80,15 @@ export default async function ContactPage({ params }: PageProps) {
       </div>
       <div className="section-py bg-brand-gray-light">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <SectionLabel text="SEND A MESSAGE" />
+          <SectionLabel text={(t.sendLabel as string) ?? "SEND A MESSAGE"} />
           <h2 className="text-section mb-4 font-poppins font-bold text-brand-navy">
-            Get in Touch
+            {(t.sendHeadline as string) ?? "Get in Touch"}
           </h2>
           <p className="mb-10 max-w-prose font-inter text-lg text-brand-navy-dark/90">
-            Fill out the form and we&apos;ll get back to you within 24 hours.
+            {(book.callWithin24 as string) ?? "Fill out the form below and we'll call you within 24 hours to confirm."}
           </p>
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-            <ContactForm />
+            <BookingForm t={book as Parameters<typeof BookingForm>[0]["t"]} source="contact" />
           </div>
         </div>
       </div>
