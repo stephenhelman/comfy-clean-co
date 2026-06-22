@@ -32,6 +32,7 @@ export default function Hero({
 }: HeroProps) {
   const router = useRouter();
   const items = useTranslations("services.items");
+  const tHero = useTranslations("hero");
   const residentialServices = getServicesByDivision("residential");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -75,7 +76,7 @@ export default function Hero({
           <div className="flex w-full flex-col items-start lg:w-1/2">
             <Reveal>
               <p className="mb-4 font-poppins text-xs font-bold uppercase tracking-[0.18em] text-brand-green-dark">
-                Clean · Fresh · Reliable
+                {tHero("eyebrow")}
               </p>
             </Reveal>
 
@@ -98,18 +99,18 @@ export default function Hero({
                 onSubmit={handleSubmit}
               >
                 <p className="font-poppins text-lg font-bold text-brand-navy">
-                  Get Your Free Quote
+                  {tHero("quoteTitle")}
                 </p>
                 <input
                   type="text"
-                  placeholder="Your Name"
+                  placeholder={tHero("namePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={quoteFieldClass}
                 />
                 <input
                   type="tel"
-                  placeholder="Phone Number"
+                  placeholder={tHero("phonePlaceholder")}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className={quoteFieldClass}
@@ -120,7 +121,7 @@ export default function Hero({
                   className={`${quoteFieldClass} ${service ? "text-brand-navy-dark" : "text-gray-500"}`}
                 >
                   <option value="" disabled>
-                    Service Needed
+                    {tHero("serviceNeeded")}
                   </option>
                   {residentialServices.map((s) => (
                     <option key={s.slug} value={s.slug}>

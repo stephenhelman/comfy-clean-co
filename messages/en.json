@@ -12,7 +12,12 @@
     "headline": "Your Home, Professionally Clean.",
     "subheadline": "El Paso's trusted residential and commercial cleaning service. We show up, we clean right, you come home to perfect.",
     "cta_primary": "Book a Free Visit →",
-    "cta_secondary": "View Services"
+    "cta_secondary": "View Services",
+    "eyebrow": "Clean · Fresh · Reliable",
+    "quoteTitle": "Get Your Free Quote",
+    "namePlaceholder": "Your Name",
+    "phonePlaceholder": "Phone Number",
+    "serviceNeeded": "Service Needed"
   },
   "whyUs": {
     "label": "WHY CHOOSE US",
@@ -29,6 +34,8 @@
   "services": {
     "label": "WHAT WE OFFER",
     "headline": "Our Cleaning Services",
+    "intro": "Professional residential and commercial cleaning tailored to your needs. Every service includes our reliability guarantee — we show up on time or your next visit is free.",
+    "viewAll": "View All Services",
     "tabs": {
       "residential": "Residential",
       "commercial": "Commercial"
@@ -125,6 +132,7 @@
   "book": {
     "label": "GET STARTED",
     "headline": "Request Your Free Visit",
+    "callWithin24": "Fill out the form below and we'll call you within 24 hours to confirm.",
     "name": "Full Name",
     "phone": "Phone Number",
     "email": "Email Address",
@@ -162,11 +170,13 @@
     "phone_label": "Phone",
     "email_label": "Email",
     "location_label": "Service Area",
-    "location_value": "Far East El Paso, Horizon City, Socorro, TX"
+    "location_value": "Far East El Paso, Horizon City, TX",
+    "sendLabel": "SEND A MESSAGE",
+    "sendHeadline": "Get in Touch"
   },
   "footer": {
     "tagline": "Clean · Fresh · Reliable",
-    "copyright": "© 2025 Comfy Clean Co. All rights reserved.",
+    "copyright": "© 2026 Comfy Clean Co. All rights reserved.",
     "location": "Far East El Paso, TX",
     "licensed": "Licensed",
     "insured": "Insured",

@@ -10,6 +10,7 @@ interface ServicesOverviewProps {
   t: {
     label: string;
     headline: string;
+    viewAll: string;
   };
 }
 
@@ -35,7 +36,7 @@ export default function ServicesOverview({ locale, t }: ServicesOverviewProps) {
             href={`/${locale}/services`}
             className="group inline-flex items-center gap-1.5 font-poppins text-sm font-bold uppercase tracking-wider text-brand-green-dark transition-colors hover:text-brand-green"
           >
-            View All Services
+            {t.viewAll}
             <ArrowRight
               size={15}
               className="transition-transform duration-200 ease-out-quart group-hover:translate-x-0.5"
