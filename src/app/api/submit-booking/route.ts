@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       notes: body.notes || undefined,
       lang: body.lang === "es" ? "es" : "en",
       source: typeof body.source === "string" && body.source ? body.source : "book",
+      smsConsent: body.smsConsent === true,
     };
 
     await crmLeadSink.create(lead);

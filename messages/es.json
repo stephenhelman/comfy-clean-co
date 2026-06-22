@@ -155,7 +155,8 @@
     "divisions": {
       "residential": "Residencial",
       "commercial": "Comercial"
-    }
+    },
+    "smsConsent": "I agree to receive service-related text messages from Comfy Clean Co. (appointment confirmations, reminders, and updates about my service request) at the number provided. Consent is not a condition of service. Msg & data rates may apply. Msg frequency varies. Reply STOP to opt out, HELP for help."
   },
   "about": {
     "label": "NUESTRA HISTORIA",

@@ -28,6 +28,7 @@ export interface BookingFormProps {
     success: string;
     error: string;
     divisions: { residential: string; commercial: string };
+    smsConsent: string;
   };
   /** Lead source tag persisted with the submission (placement default). */
   source?: string;
@@ -78,6 +79,8 @@ export default function BookingForm({
   const [preferredDate, setPreferredDate] = useState("");
   const [preferredTime, setPreferredTime] = useState("");
   const [notes, setNotes] = useState("");
+  // Transactional SMS consent — optional, unchecked by default.
+  const [smsConsent, setSmsConsent] = useState(false);
   // A carried source (e.g. "home-hero") set by the hero prefill wins over the placement default.
   const [carriedSource, setCarriedSource] = useState<string | null>(null);
 
@@ -137,6 +140,7 @@ export default function BookingForm({
       notes: notes || undefined,
       lang,
       source: carriedSource ?? source,
+      smsConsent,
       website: (e.currentTarget.elements.namedItem("website") as HTMLInputElement)?.value ?? "",
     };
 
@@ -297,6 +301,20 @@ export default function BookingForm({
           ))}
         </div>
       </div>
+
+      {/* Transactional SMS consent — optional, unchecked by default. */}
+      <label className="flex cursor-pointer items-start gap-3">
+        <input
+          type="checkbox"
+          name="smsConsent"
+          checked={smsConsent}
+          onChange={(e) => setSmsConsent(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-brand-green"
+        />
+        <span className="font-inter text-xs leading-relaxed text-brand-navy-dark/80">
+          {t.smsConsent}
+        </span>
+      </label>
 
       {status === "error" && <p className="font-inter text-sm text-red-500">{t.error}</p>}
 
