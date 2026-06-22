@@ -27,12 +27,67 @@
   "services": {
     "label": "WHAT WE OFFER",
     "headline": "Our Cleaning Services",
-    "residential_title": "Residential Cleaning",
-    "residential_desc": "Deep clean, standard clean, move-in/out cleaning tailored to your home.",
-    "commercial_title": "Commercial Cleaning",
-    "commercial_desc": "Offices, retail, small commercial spaces — cleaned right every time.",
-    "recurring_title": "Recurring Plans",
-    "recurring_desc": "Weekly, bi-weekly, and monthly schedules available for consistent cleanliness."
+    "tabs": {
+      "residential": "Residential",
+      "commercial": "Commercial"
+    },
+    "items": {
+      "standard": {
+        "title": "Standard Cleaning",
+        "desc": "Routine top-to-bottom cleaning that keeps your home consistently fresh.",
+        "features": ["Dusting & surfaces", "Floors vacuumed & mopped", "Kitchens & bathrooms"]
+      },
+      "deep-clean": {
+        "title": "Deep Clean",
+        "desc": "A detailed, intensive clean that reaches the spots a standard visit doesn't.",
+        "features": ["Baseboards & detail work", "Buildup & grime removal", "Inside appliances on request"]
+      },
+      "airbnb": {
+        "title": "Airbnb / Turnover",
+        "desc": "Fast, reliable turnovers that get your short-term rental guest-ready.",
+        "features": ["Guest-ready reset", "Linens & restock friendly", "Flexible scheduling"]
+      },
+      "move-in-out": {
+        "title": "Move-in / Move-out",
+        "desc": "A thorough clean for empty homes at the start or end of a lease.",
+        "features": ["Whole-home detail", "Inside cabinets & closets", "Lease-ready finish"]
+      },
+      "kitchen-bath": {
+        "title": "Kitchen & Bath Cleaning",
+        "desc": "Focused cleaning for the hardest-working rooms in the house.",
+        "features": ["Counters & fixtures", "Sinks, tubs & showers", "Floors & surfaces"]
+      },
+      "laundry": {
+        "title": "Laundry Assistance",
+        "desc": "Wash, dry, and fold help added to your cleaning visit.",
+        "features": ["Wash & dry", "Fold & tidy", "Add-on to any clean"]
+      },
+      "custom": {
+        "title": "Custom Cleaning",
+        "desc": "Tell us what you need and we'll build a clean around it.",
+        "features": ["Tailored checklist", "One-time or recurring", "Priced to your needs"]
+      },
+      "office": {
+        "title": "Office Buildings",
+        "desc": "Dependable cleaning that keeps your workplace presentable and healthy.",
+        "features": ["Workstations & common areas", "Restrooms & breakrooms", "After-hours available"]
+      },
+      "churches": {
+        "title": "Churches",
+        "desc": "Sunday-ready cleaning so your congregation walks into a spotless space.",
+        "features": ["Sanctuary & seating", "Restrooms & fellowship areas", "Scheduled around services"]
+      },
+      "retail": {
+        "title": "Retail Spaces",
+        "desc": "Clean, welcoming storefronts that make the right first impression.",
+        "features": ["Sales floor & entry", "Fitting rooms & counters", "Flexible hours"]
+      },
+      "small-commercial": {
+        "title": "Small Commercial",
+        "desc": "Right-sized cleaning for small offices, studios, and shops.",
+        "features": ["Flexible scope", "Recurring or one-time", "Local & reliable"]
+      }
+    }
   },
   "serviceArea": {
     "label": "WHERE WE SERVE",
@@ -45,38 +100,25 @@
     "name": "Full Name",
     "phone": "Phone Number",
     "email": "Email Address",
-    "address": "Service Address",
-    "serviceType": "Service Type",
-    "frequency": "Frequency",
-    "homeSize": "Home Size / Space",
+    "division": "Division",
+    "service": "Service",
+    "servicePlaceholder": "Select a service",
     "preferredDate": "Preferred Date",
     "preferredTime": "Preferred Time",
+    "timeNoPreference": "No preference",
+    "times": {
+      "morning": "Morning (8am–12pm)",
+      "afternoon": "Afternoon (12pm–4pm)",
+      "flexible": "Flexible"
+    },
     "notes": "Special Notes (optional)",
     "language": "Communication Language",
     "submit": "Request My Free Visit →",
     "success": "Thank you! We received your request and will call you within 24 hours to confirm your visit.",
     "error": "Something went wrong. Please try again or call us directly.",
-    "serviceTypes": {
-      "residential": "Residential Cleaning",
-      "commercial": "Commercial Cleaning"
-    },
-    "frequencies": {
-      "oneTime": "One-time",
-      "weekly": "Weekly",
-      "biweekly": "Bi-weekly",
-      "monthly": "Monthly"
-    },
-    "homeSizes": {
-      "studio": "Studio / Small (under 800 sq ft)",
-      "medium": "Medium (800–1,400 sq ft)",
-      "large": "Large (1,400–2,200 sq ft)",
-      "xlarge": "Extra Large (2,200+ sq ft)",
-      "commercial": "Commercial — please describe below"
-    },
-    "times": {
-      "morning": "Morning (8am–12pm)",
-      "afternoon": "Afternoon (12pm–4pm)",
-      "flexible": "Flexible"
+    "divisions": {
+      "residential": "Residential",
+      "commercial": "Commercial"
     }
   },
   "about": {

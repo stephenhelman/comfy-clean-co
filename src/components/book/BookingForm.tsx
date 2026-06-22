@@ -1,114 +1,159 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Check } from "lucide-react";
+import {
+  DIVISIONS,
+  getServicesByDivision,
+  getServiceBySlug,
+  type Division,
+} from "@/lib/services";
 
-interface BookingFormProps {
+export interface BookingFormProps {
   t: {
     name: string;
     phone: string;
     email: string;
-    address: string;
-    serviceType: string;
-    frequency: string;
-    homeSize: string;
-    preferredDate: string;
-    preferredTime: string;
     notes: string;
     language: string;
+    division: string;
+    service: string;
+    servicePlaceholder: string;
+    preferredDate: string;
+    preferredTime: string;
+    timeNoPreference: string;
+    times: { morning: string; afternoon: string; flexible: string };
     submit: string;
     success: string;
     error: string;
-    serviceTypes: { residential: string; commercial: string };
-    frequencies: { oneTime: string; weekly: string; biweekly: string; monthly: string };
-    homeSizes: { studio: string; medium: string; large: string; xlarge: string; commercial: string };
-    times: { morning: string; afternoon: string; flexible: string };
+    divisions: { residential: string; commercial: string };
   };
+  /** Lead source tag persisted with the submission (placement default). */
+  source?: string;
+  /** Preset + lock the form to a specific service (service pages). */
+  presetService?: string;
+  presetDivision?: Division;
+  lockService?: boolean;
 }
 
 const inputClass =
   "w-full bg-white border border-gray-300 text-brand-navy-dark placeholder:text-gray-500 rounded-lg px-4 py-3 font-inter text-sm focus:border-brand-green focus:ring-2 focus:ring-brand-green/30 focus:outline-none transition-colors";
-
 const labelClass = "block font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-2";
 
 const PREFILL_KEY = "comfy_quote_prefill";
 
-export default function BookingForm({ t }: BookingFormProps) {
+interface Prefill {
+  name?: string;
+  phone?: string;
+  service?: string;
+  division?: Division;
+  source?: string;
+}
+
+const REQUIRED = ["name", "phone", "email", "division", "service"] as const;
+
+export default function BookingForm({
+  t,
+  source = "book",
+  presetService,
+  presetDivision,
+  lockService = false,
+}: BookingFormProps) {
+  const locale = useLocale();
+  const items = useTranslations("services.items");
+
+  const initialDivision: Division =
+    presetDivision ?? (presetService ? getServiceBySlug(presetService)?.division : undefined) ?? "residential";
+
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
-  const [langPref, setLangPref] = useState<"English" | "Español">("English");
-  const [prefill, setPrefill] = useState({ name: "", phone: "", serviceType: "" });
+  const [lang, setLang] = useState<"en" | "es">(locale === "es" ? "es" : "en");
 
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [division, setDivision] = useState<Division>(initialDivision);
+  const [service, setService] = useState(presetService ?? "");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
+  const [notes, setNotes] = useState("");
+  // A carried source (e.g. "home-hero") set by the hero prefill wins over the placement default.
+  const [carriedSource, setCarriedSource] = useState<string | null>(null);
+
+  // Hero quick-quote → localStorage prefill (only when not a locked service page).
   useEffect(() => {
+    if (lockService) return;
     try {
       const stored = localStorage.getItem(PREFILL_KEY);
-      if (stored) {
-        setPrefill(JSON.parse(stored));
-        localStorage.removeItem(PREFILL_KEY);
-      }
+      if (!stored) return;
+      const p = JSON.parse(stored) as Prefill;
+      if (p.name) setName(p.name);
+      if (p.phone) setPhone(p.phone);
+      if (p.division) setDivision(p.division);
+      if (p.service && getServiceBySlug(p.service)) setService(p.service);
+      if (p.source) setCarriedSource(p.source);
+      localStorage.removeItem(PREFILL_KEY);
     } catch {
       // ignore
     }
-  }, []);
+  }, [lockService]);
 
-  const required = ["name", "phone", "email", "address", "serviceType", "frequency", "homeSize", "preferredDate", "preferredTime"];
+  const serviceOptions = getServicesByDivision(division);
 
-  function validate(form: HTMLFormElement): boolean {
-    const newErrors: Record<string, boolean> = {};
-    let valid = true;
-    for (const field of required) {
-      const el = form.elements.namedItem(field) as HTMLInputElement | HTMLSelectElement;
-      if (!el || !el.value.trim()) {
-        newErrors[field] = true;
-        valid = false;
-      }
-    }
-    setErrors(newErrors);
-    return valid;
+  function onDivisionChange(next: Division) {
+    setDivision(next);
+    setService(""); // service list depends on division; reset the picker
+    setErrors((e) => ({ ...e, division: false }));
   }
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  function validate(): boolean {
+    const values: Record<string, string> = { name, phone, email, division, service };
+    const next: Record<string, boolean> = {};
+    let ok = true;
+    for (const field of REQUIRED) {
+      if (!values[field]?.trim()) {
+        next[field] = true;
+        ok = false;
+      }
+    }
+    setErrors(next);
+    return ok;
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
-
-    if (!validate(form)) return;
-
+    if (!validate()) return;
     setStatus("loading");
 
-    const data = {
-      name: (form.elements.namedItem("name") as HTMLInputElement).value,
-      phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
-      email: (form.elements.namedItem("email") as HTMLInputElement).value,
-      address: (form.elements.namedItem("address") as HTMLInputElement).value,
-      serviceType: (form.elements.namedItem("serviceType") as HTMLSelectElement).value,
-      frequency: (form.elements.namedItem("frequency") as HTMLSelectElement).value,
-      homeSize: (form.elements.namedItem("homeSize") as HTMLSelectElement).value,
-      preferredDate: (form.elements.namedItem("preferredDate") as HTMLInputElement).value,
-      preferredTime: (form.elements.namedItem("preferredTime") as HTMLSelectElement).value,
-      notes: (form.elements.namedItem("notes") as HTMLTextAreaElement).value,
-      languagePreference: langPref,
-      website: (form.elements.namedItem("website") as HTMLInputElement)?.value ?? "",
+    const payload = {
+      name,
+      phone,
+      email,
+      division,
+      service,
+      preferredDate: preferredDate || undefined,
+      preferredTime: preferredTime || undefined,
+      notes: notes || undefined,
+      lang,
+      source: carriedSource ?? source,
+      website: (e.currentTarget.elements.namedItem("website") as HTMLInputElement)?.value ?? "",
     };
 
     try {
       const res = await fetch("/api/submit-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
-      if (json.ok) {
-        setStatus("success");
-      } else {
-        setStatus("error");
-      }
+      setStatus(json.ok ? "success" : "error");
     } catch {
       setStatus("error");
     }
   }
 
-  const fieldBorder = (name: string) =>
-    errors[name] ? "border-red-500" : "";
+  const errBorder = (name: string) => (errors[name] ? "border-red-500" : "");
 
   if (status === "success") {
     return (
@@ -122,8 +167,8 @@ export default function BookingForm({ t }: BookingFormProps) {
   }
 
   return (
-    <form key={prefill.name + prefill.phone + prefill.serviceType} onSubmit={handleSubmit} noValidate className="space-y-6">
-      {/* Honeypot — hidden from real users, catches bots that fill all fields */}
+    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+      {/* Honeypot */}
       <input
         type="text"
         name="website"
@@ -131,147 +176,93 @@ export default function BookingForm({ t }: BookingFormProps) {
         tabIndex={-1}
         aria-hidden="true"
         style={{ display: "none" }}
-        value=""
-        onChange={() => {}}
+        defaultValue=""
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Full Name */}
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className={labelClass}>{t.name} *</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            placeholder={t.name}
-            defaultValue={prefill.name}
-            className={`${inputClass} ${fieldBorder("name")}`}
-            onBlur={(e) => {
-              if (!e.target.value.trim()) setErrors((prev) => ({ ...prev, name: true }));
-              else setErrors((prev) => ({ ...prev, name: false }));
-            }}
-          />
+          <input id="name" name="name" type="text" placeholder={t.name} value={name}
+            onChange={(e) => setName(e.target.value)} className={`${inputClass} ${errBorder("name")}`} />
         </div>
-
-        {/* Phone */}
         <div>
           <label htmlFor="phone" className={labelClass}>{t.phone} *</label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            placeholder={t.phone}
-            defaultValue={prefill.phone}
-            className={`${inputClass} ${fieldBorder("phone")}`}
-            onBlur={(e) => {
-              if (!e.target.value.trim()) setErrors((prev) => ({ ...prev, phone: true }));
-              else setErrors((prev) => ({ ...prev, phone: false }));
-            }}
-          />
+          <input id="phone" name="phone" type="tel" placeholder={t.phone} value={phone}
+            onChange={(e) => setPhone(e.target.value)} className={`${inputClass} ${errBorder("phone")}`} />
         </div>
-
-        {/* Email */}
-        <div>
+        <div className="sm:col-span-2">
           <label htmlFor="email" className={labelClass}>{t.email} *</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            placeholder={t.email}
-            className={`${inputClass} ${fieldBorder("email")}`}
-            onBlur={(e) => {
-              if (!e.target.value.trim()) setErrors((prev) => ({ ...prev, email: true }));
-              else setErrors((prev) => ({ ...prev, email: false }));
+          <input id="email" name="email" type="email" placeholder={t.email} value={email}
+            onChange={(e) => setEmail(e.target.value)} className={`${inputClass} ${errBorder("email")}`} />
+        </div>
+      </div>
+
+      {/* Division — locked on a service page, otherwise a chooser that filters services */}
+      <div>
+        <label className={labelClass}>{t.division} *</label>
+        {lockService ? (
+          <p className="font-inter text-sm text-brand-navy-dark">{t.divisions[division]}</p>
+        ) : (
+          <div className="flex gap-3">
+            {DIVISIONS.map((d) => (
+              <button
+                key={d}
+                type="button"
+                aria-pressed={division === d}
+                onClick={() => onDivisionChange(d)}
+                className={`press flex-1 rounded-lg border-2 px-4 py-3 font-inter text-sm font-medium transition-colors ${
+                  division === d
+                    ? "border-brand-green bg-brand-green text-white"
+                    : "border-gray-200 bg-white text-brand-navy hover:border-brand-green/50 hover:bg-brand-green-pale"
+                }`}
+              >
+                {t.divisions[d]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Service — manifest-driven; locked to a single value on a service page */}
+      <div>
+        <label htmlFor="service" className={labelClass}>{t.service} *</label>
+        {lockService && service ? (
+          <div className="rounded-lg border border-gray-300 bg-brand-off-white px-4 py-3 font-inter text-sm text-brand-navy-dark">
+            {items(`${service}.title`)}
+          </div>
+        ) : (
+          <select
+            id="service"
+            name="service"
+            value={service}
+            onChange={(e) => {
+              setService(e.target.value);
+              setErrors((er) => ({ ...er, service: false }));
             }}
-          />
-        </div>
-
-        {/* Service Address */}
-        <div>
-          <label htmlFor="address" className={labelClass}>{t.address} *</label>
-          <input
-            id="address"
-            name="address"
-            type="text"
-            placeholder={t.address}
-            className={`${inputClass} ${fieldBorder("address")}`}
-            onBlur={(e) => {
-              if (!e.target.value.trim()) setErrors((prev) => ({ ...prev, address: true }));
-              else setErrors((prev) => ({ ...prev, address: false }));
-            }}
-          />
-        </div>
-
-        {/* Service Type */}
-        <div>
-          <label htmlFor="serviceType" className={labelClass}>{t.serviceType} *</label>
-          <select
-            id="serviceType"
-            name="serviceType"
-            defaultValue={prefill.serviceType || ""}
-            className={`${inputClass} ${fieldBorder("serviceType")}`}
+            className={`${inputClass} ${errBorder("service")} ${service ? "text-brand-navy-dark" : "text-gray-500"}`}
           >
-            <option value="" disabled>{t.serviceType}</option>
-            <option value={t.serviceTypes.residential}>{t.serviceTypes.residential}</option>
-            <option value={t.serviceTypes.commercial}>{t.serviceTypes.commercial}</option>
+            <option value="" disabled>{t.servicePlaceholder}</option>
+            {serviceOptions.map((s) => (
+              <option key={s.slug} value={s.slug}>{items(`${s.slug}.title`)}</option>
+            ))}
           </select>
-        </div>
+        )}
+      </div>
 
-        {/* Frequency */}
+      {/* Preferred date + time (optional) */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-          <label htmlFor="frequency" className={labelClass}>{t.frequency} *</label>
-          <select
-            id="frequency"
-            name="frequency"
-            defaultValue=""
-            className={`${inputClass} ${fieldBorder("frequency")}`}
-          >
-            <option value="" disabled>{t.frequency}</option>
-            <option value={t.frequencies.oneTime}>{t.frequencies.oneTime}</option>
-            <option value={t.frequencies.weekly}>{t.frequencies.weekly}</option>
-            <option value={t.frequencies.biweekly}>{t.frequencies.biweekly}</option>
-            <option value={t.frequencies.monthly}>{t.frequencies.monthly}</option>
-          </select>
+          <label htmlFor="preferredDate" className={labelClass}>{t.preferredDate}</label>
+          <input id="preferredDate" name="preferredDate" type="date" value={preferredDate}
+            onChange={(e) => setPreferredDate(e.target.value)}
+            className={`${inputClass} ${preferredDate ? "text-brand-navy-dark" : "text-gray-500"}`} />
         </div>
-
-        {/* Home Size */}
         <div>
-          <label htmlFor="homeSize" className={labelClass}>{t.homeSize} *</label>
-          <select
-            id="homeSize"
-            name="homeSize"
-            defaultValue=""
-            className={`${inputClass} ${fieldBorder("homeSize")}`}
-          >
-            <option value="" disabled>{t.homeSize}</option>
-            <option value="studio">{t.homeSizes.studio}</option>
-            <option value="medium">{t.homeSizes.medium}</option>
-            <option value="large">{t.homeSizes.large}</option>
-            <option value="xlarge">{t.homeSizes.xlarge}</option>
-            <option value="commercial">{t.homeSizes.commercial}</option>
-          </select>
-        </div>
-
-        {/* Preferred Date */}
-        <div>
-          <label htmlFor="preferredDate" className={labelClass}>{t.preferredDate} *</label>
-          <input
-            id="preferredDate"
-            name="preferredDate"
-            type="date"
-            className={`${inputClass} ${fieldBorder("preferredDate")}`}
-          />
-        </div>
-
-        {/* Preferred Time */}
-        <div>
-          <label htmlFor="preferredTime" className={labelClass}>{t.preferredTime} *</label>
-          <select
-            id="preferredTime"
-            name="preferredTime"
-            defaultValue=""
-            className={`${inputClass} ${fieldBorder("preferredTime")}`}
-          >
-            <option value="" disabled>{t.preferredTime}</option>
+          <label htmlFor="preferredTime" className={labelClass}>{t.preferredTime}</label>
+          <select id="preferredTime" name="preferredTime" value={preferredTime}
+            onChange={(e) => setPreferredTime(e.target.value)}
+            className={`${inputClass} ${preferredTime ? "text-brand-navy-dark" : "text-gray-500"}`}>
+            <option value="">{t.timeNoPreference}</option>
             <option value={t.times.morning}>{t.times.morning}</option>
             <option value={t.times.afternoon}>{t.times.afternoon}</option>
             <option value={t.times.flexible}>{t.times.flexible}</option>
@@ -279,46 +270,36 @@ export default function BookingForm({ t }: BookingFormProps) {
         </div>
       </div>
 
-      {/* Special Notes */}
       <div>
         <label htmlFor="notes" className={labelClass}>{t.notes}</label>
-        <textarea
-          id="notes"
-          name="notes"
-          rows={4}
-          placeholder={t.notes}
-          className={inputClass}
-        />
+        <textarea id="notes" name="notes" rows={4} placeholder={t.notes} value={notes}
+          onChange={(e) => setNotes(e.target.value)} className={inputClass} />
       </div>
 
-      {/* Language preference */}
+      {/* Communication language */}
       <div>
         <label className={labelClass}>{t.language}</label>
         <div className="flex gap-2">
-          {(["English", "Español"] as const).map((lang) => (
+          {(["en", "es"] as const).map((code) => (
             <button
-              key={lang}
+              key={code}
               type="button"
-              onClick={() => setLangPref(lang)}
-              aria-pressed={langPref === lang}
+              aria-pressed={lang === code}
+              onClick={() => setLang(code)}
               className={`press rounded-lg px-4 py-2 font-poppins text-xs font-bold uppercase tracking-wider transition-colors ${
-                langPref === lang
+                lang === code
                   ? "bg-brand-green text-white"
                   : "border border-gray-300 text-brand-navy hover:border-brand-green"
               }`}
             >
-              {lang}
+              {code === "en" ? "English" : "Español"}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Error message */}
-      {status === "error" && (
-        <p className="text-red-500 font-inter text-sm">{t.error}</p>
-      )}
+      {status === "error" && <p className="font-inter text-sm text-red-500">{t.error}</p>}
 
-      {/* Submit */}
       <button
         type="submit"
         disabled={status === "loading"}

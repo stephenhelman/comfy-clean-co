@@ -134,10 +134,12 @@ model LeadInquiry {
   name          String
   email         String
   phone         String
-  type          String    // residential | commercial
-  frequency     String    // one-time | recurring
+  type          String    // residential | commercial (the marketing "division")
+  service       String?   // marketing service slug (1a-final); null for /contact leads
+  frequency     String?   // vestigial — relaxed in 1a-final; order form no longer collects it
   preferredDay  String?
   preferredTime String?
+  address       String?   // admin-collected later; public order form does not capture it
   notes         String?
   source        String?
   adminNotes    String?

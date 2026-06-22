@@ -10,7 +10,7 @@ interface Lead {
   email: string
   phone: string
   type: string
-  frequency: string
+  frequency: string | null
   status: string
   clientId: string | null
 }

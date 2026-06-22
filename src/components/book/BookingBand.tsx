@@ -5,6 +5,8 @@ interface BookingBandProps {
   t: Parameters<typeof BookingForm>[0]["t"] & { label?: string; headline?: string };
   /** Heading level — h1 on the dedicated Book page, h2 when embedded below content. */
   as?: "h1" | "h2";
+  /** Lead source tag for this placement (e.g. "book", "home", "services-page"). */
+  source?: string;
 }
 
 /**
@@ -12,7 +14,7 @@ interface BookingBandProps {
  * Services, About, and Book pages. Copy is intentionally verbatim (structural
  * dedupe only). Pages provide their own section wrapper / background.
  */
-export default function BookingBand({ t, as = "h2" }: BookingBandProps) {
+export default function BookingBand({ t, as = "h2", source = "book" }: BookingBandProps) {
   const Heading = as;
   const headingScale = as === "h1" ? "text-display" : "text-section";
   return (
@@ -25,7 +27,7 @@ export default function BookingBand({ t, as = "h2" }: BookingBandProps) {
         Fill out the form below and we&apos;ll call you within 24 hours to confirm.
       </p>
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-        <BookingForm t={t} />
+        <BookingForm t={t} source={source} />
       </div>
     </div>
   );

@@ -72,7 +72,7 @@ export default async function HomePage({ params }: PageProps) {
       <ServicesOverview locale={locale} t={services as Parameters<typeof ServicesOverview>[0]["t"]} />
       <ServiceArea t={serviceArea as Parameters<typeof ServiceArea>[0]["t"]} />
       <section className="section-py bg-brand-gray-light">
-        <BookingBand t={book as Parameters<typeof BookingBand>[0]["t"]} />
+        <BookingBand t={book as Parameters<typeof BookingBand>[0]["t"]} source="home" />
       </section>
     </>
   );

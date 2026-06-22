@@ -11,7 +11,7 @@ export interface LeadRow {
   email: string
   phone: string
   type: string
-  frequency: string
+  frequency: string | null
   status: string
   source: string | null
   createdAt: Date
