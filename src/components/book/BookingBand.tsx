@@ -2,7 +2,7 @@ import SectionLabel from "@/components/ui/SectionLabel";
 import BookingForm from "@/components/book/BookingForm";
 
 interface BookingBandProps {
-  t: Parameters<typeof BookingForm>[0]["t"] & { label?: string; headline?: string };
+  t: Parameters<typeof BookingForm>[0]["t"] & { label?: string; headline?: string; callWithin24?: string };
   /** Heading level — h1 on the dedicated Book page, h2 when embedded below content. */
   as?: "h1" | "h2";
   /** Lead source tag for this placement (e.g. "book", "home", "services-page"). */
@@ -24,7 +24,7 @@ export default function BookingBand({ t, as = "h2", source = "book" }: BookingBa
         {t.headline ?? "Request Your Free Visit"}
       </Heading>
       <p className="mb-10 max-w-prose font-inter text-lg text-brand-navy-dark/90">
-        Fill out the form below and we&apos;ll call you within 24 hours to confirm.
+        {t.callWithin24 ?? "Fill out the form below and we'll call you within 24 hours to confirm."}
       </p>
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
         <BookingForm t={t} source={source} />

@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import { getMessages } from "next-intl/server";
 import BookingBand from "@/components/book/BookingBand";
-
-export const metadata: Metadata = {
-  title: "Book a Cleaning",
-  description:
-    "Request a free visit from Comfy Clean Co in Far East El Paso, TX. Fill out the form and we'll confirm within 24 hours. Residential and commercial cleaning available.",
-  alternates: {
-    canonical: "https://comfycleanco.com/book",
-  },
-};
+import { localeAlternates } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: "Book a Cleaning",
+    description:
+      "Request a free visit from Comfy Clean Co in Far East El Paso, TX. Fill out the form and we'll confirm within 24 hours. Residential and commercial cleaning available.",
+    alternates: localeAlternates(locale, "/book"),
+  };
 }
 
 export default async function BookPage({ params }: PageProps) {

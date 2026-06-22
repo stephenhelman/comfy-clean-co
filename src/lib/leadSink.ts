@@ -21,6 +21,13 @@ export interface LeadSubmission {
   notes?: string;
   lang: "en" | "es";
   source: string; // e.g. "book" | "home" | "home-hero" | "services-page" | "about" | "services/<slug>"
+  /**
+   * Website SMS consent — covers TRANSACTIONAL/service messages only
+   * (confirmations, reminders, service updates), not marketing. true sets
+   * smsOptedIn at create; false leaves the SMS fields at their defaults. The
+   * website path never sets smsOptInSent* (that's the admin invite path).
+   */
+  smsConsent: boolean;
 }
 
 export interface LeadSinkResult {
@@ -56,11 +63,21 @@ export const crmLeadSink: LeadSink = {
       },
     });
 
+    // Website consent → transactional SMS opt-in, written atomically with the lead.
+    // Only ever sets the opt-in fields from the website; never smsOptInSent*.
+    const smsOptIn = lead.smsConsent
+      ? { smsOptedIn: true, smsOptedInAt: new Date() }
+      : {};
+
     if (existing) {
       const dupNote = `Duplicate submission on ${new Date().toLocaleDateString("en-US")} (source: ${lead.source}, service: ${lead.service}).`;
       await db.leadInquiry.update({
         where: { id: existing.id },
-        data: { notes: existing.notes ? `${existing.notes}\n${dupNote}` : dupNote },
+        data: {
+          notes: existing.notes ? `${existing.notes}\n${dupNote}` : dupNote,
+          // Honor a fresh opt-in on a returning lead, but don't override an opt-out.
+          ...(lead.smsConsent && !existing.smsOptedOut ? smsOptIn : {}),
+        },
       });
       return { id: existing.id, duplicate: true };
     }
@@ -76,6 +93,7 @@ export const crmLeadSink: LeadSink = {
         preferredTime: lead.preferredTime || null,
         source: lead.source,
         notes: buildNotes(lead),
+        ...smsOptIn,
       },
     });
 

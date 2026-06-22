@@ -7,6 +7,7 @@ import GoogleBadge from "@/components/reviews/GoogleBadge";
 import ReviewsCarousel from "@/components/reviews/ReviewsCarousel";
 import { getReviewsData } from "@/lib/businessData";
 import { googleReviewsUrl, googleWriteReviewUrl } from "@/lib/businessInfo";
+import { localeAlternates } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "https://comfycleanco.com/reviews" },
+    alternates: localeAlternates(locale, "/reviews"),
   };
 }
 

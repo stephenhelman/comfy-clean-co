@@ -3,18 +3,20 @@ import { getMessages } from "next-intl/server";
 import SectionLabel from "@/components/ui/SectionLabel";
 import Reveal from "@/components/ui/Reveal";
 import BookingBand from "@/components/book/BookingBand";
-
-export const metadata: Metadata = {
-  title: "About",
-  description:
-    "Learn about Comfy Clean Co, a family-run cleaning company serving Far East El Paso, TX with reliable, professional residential and commercial cleaning.",
-  alternates: {
-    canonical: "https://comfycleanco.com/about",
-  },
-};
+import { localeAlternates } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: "About",
+    description:
+      "Learn about Comfy Clean Co, a family-run cleaning company serving Far East El Paso, TX with reliable, professional residential and commercial cleaning.",
+    alternates: localeAlternates(locale, "/about"),
+  };
 }
 
 export default async function AboutPage({ params }: PageProps) {

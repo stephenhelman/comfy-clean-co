@@ -1,5 +1,17 @@
 import { db } from '@/lib/db'
 
+/**
+ * The single consent gate for lead-directed SMS: opted in AND not opted out.
+ * Call this before any lead-directed send that doesn't pass skipOptInCheck.
+ *
+ * IMPORTANT: keep all sends TRANSACTIONAL (appointment confirmations, reminders,
+ * service updates) until a registered A2P 10DLC campaign exists. Do not send
+ * marketing/promotional content under this consent.
+ */
+export function canTextLead(lead: { smsOptedIn: boolean; smsOptedOut: boolean }): boolean {
+  return lead.smsOptedIn === true && lead.smsOptedOut === false
+}
+
 interface SendSmsParams {
   to: string
   body: string
@@ -11,6 +23,8 @@ interface SendSmsParams {
 }
 
 export async function sendSms(params: SendSmsParams): Promise<void> {
+  // Consent gate (equivalent to canTextLead): require opted in AND not opted out.
+  // Sends must stay transactional pre-A2P-10DLC registration — see canTextLead.
   if (!params.skipOptInCheck) {
     const optedOut = await isOptedOut(params.clientId, params.leadId)
     if (optedOut) {

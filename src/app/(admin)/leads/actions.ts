@@ -238,6 +238,14 @@ export async function createManualLead(formData: FormData) {
 
   const data = parsed.data
 
+  // Verbal consent → record the standard note + acting-staff stamp in adminNotes
+  // (no dedicated "verified by" column — no-migration constraint).
+  const verbalNote =
+    smsChoice === 'verbal'
+      ? `Customer verbally consented to service-related SMS (reminders/updates) during phone contact. — ${session.user.name ?? 'staff'} (${new Date().toLocaleDateString('en-US')})`
+      : null
+  const combinedAdminNotes = [data.adminNotes, verbalNote].filter(Boolean).join('\n') || null
+
   const lead = await db.leadInquiry.create({
     data: {
       name: data.name,
@@ -249,7 +257,7 @@ export async function createManualLead(formData: FormData) {
       preferredTime: data.preferredTime || null,
       source: data.source || 'manual',
       notes: data.notes || null,
-      adminNotes: data.adminNotes || null,
+      adminNotes: combinedAdminNotes,
       status: 'new',
       smsOptedIn: smsChoice === 'verbal',
       smsOptedInAt: smsChoice === 'verbal' ? new Date() : null,
@@ -331,9 +339,17 @@ export async function leadMarkVerbalOptIn(leadId: string) {
   const lead = await db.leadInquiry.findUniqueOrThrow({ where: { id: leadId } })
   if (!lead.phone) throw new Error('No phone number on file')
 
+  // Standard verbal-consent record + acting-staff stamp (no dedicated "verified by"
+  // column exists — store in adminNotes per the no-migration constraint).
+  const verbalNote = `Customer verbally consented to service-related SMS (reminders/updates) during phone contact. — ${session.user.name ?? 'staff'} (${new Date().toLocaleDateString('en-US')})`
+
   await db.leadInquiry.update({
     where: { id: leadId },
-    data: { smsOptedIn: true, smsOptedInAt: new Date() },
+    data: {
+      smsOptedIn: true,
+      smsOptedInAt: new Date(),
+      adminNotes: lead.adminNotes ? `${lead.adminNotes}\n${verbalNote}` : verbalNote,
+    },
   })
 
   await sendSms({

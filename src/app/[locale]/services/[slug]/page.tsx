@@ -5,13 +5,19 @@ import { Check } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import BookingForm from "@/components/book/BookingForm";
 import { getServices, getServiceBySlug } from "@/lib/services";
+import { localeAlternates } from "@/lib/seo";
+
+const LOCALES = ["en", "es"];
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
+// Full locale × slug product — the parent [locale] segment has no
+// generateStaticParams, so the child must supply the locale too (otherwise
+// production generates paths missing the locale and 500s).
 export function generateStaticParams() {
-  return getServices().map((s) => ({ slug: s.slug }));
+  return LOCALES.flatMap((locale) => getServices().map((s) => ({ locale, slug: s.slug })));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -20,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const t = await getTranslations({ locale, namespace: "services.items" });
   return {
     title: t(`${slug}.title`),
-    alternates: { canonical: `https://comfycleanco.com/services/${slug}` },
+    alternates: localeAlternates(locale, `/services/${slug}`),
   };
 }
 
@@ -30,6 +36,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
   if (!service) notFound();
 
   const t = await getTranslations({ locale, namespace: "services.items" });
+  const tTabs = await getTranslations({ locale, namespace: "services.tabs" });
   const messages = (await getMessages({ locale })) as Record<string, Record<string, unknown>>;
   const book = messages.book ?? {};
   const features = (t.raw(`${slug}.features`) as string[] | undefined) ?? [];
@@ -39,7 +46,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
         {/* Service detail */}
         <div>
-          <SectionLabel text={service.division === "commercial" ? "COMMERCIAL" : "RESIDENTIAL"} />
+          <SectionLabel text={tTabs(service.division)} />
           <h1 className="text-display mb-5 font-poppins font-bold text-brand-navy">
             {t(`${slug}.title`)}
           </h1>
@@ -64,7 +71,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
             {(book.headline as string) ?? "Request Your Free Visit"}
           </h2>
           <p className="mb-8 font-inter text-brand-navy-dark/90">
-            Fill out the form below and we&apos;ll call you within 24 hours to confirm.
+            {(book.callWithin24 as string) ?? "Fill out the form below and we'll call you within 24 hours to confirm."}
           </p>
           <BookingForm
             t={book as Parameters<typeof BookingForm>[0]["t"]}
