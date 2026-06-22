@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { Home, Building2, Check } from 'lucide-react'
 
 const inputClass =
-  'w-full bg-white border border-gray-300 text-brand-navy-dark placeholder:text-gray-400 rounded-md px-4 py-3 font-inter text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none transition-colors'
+  'w-full bg-white border border-gray-300 text-brand-navy-dark placeholder:text-gray-500 rounded-lg px-4 py-3 font-inter text-sm focus:border-brand-green focus:ring-2 focus:ring-brand-green/30 focus:outline-none transition-colors'
 
 const labelClass = 'block font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-2'
 const errorClass = 'text-red-500 font-inter text-xs mt-1'
@@ -30,7 +31,8 @@ function ToggleButton({ value, current, onClick, children }: {
     <button
       type="button"
       onClick={() => onClick(value)}
-      className={`flex-1 py-3 px-4 rounded-lg border-2 font-inter font-medium text-sm transition-all ${
+      aria-pressed={active}
+      className={`press flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 font-inter text-sm font-medium transition-colors ${
         active
           ? 'border-brand-green bg-brand-green text-white shadow-sm'
           : 'border-gray-200 bg-white text-brand-navy hover:border-brand-green/50 hover:bg-brand-green-pale'
@@ -105,12 +107,14 @@ export default function ContactForm() {
 
   if (status === 'success') {
     return (
-      <div className="bg-brand-green-pale border border-brand-green rounded-xl p-8 text-center">
-        <div className="text-brand-green text-5xl mb-4">✓</div>
-        <p className="font-poppins font-bold text-xl text-brand-navy mb-2">
+      <div className="animate-pop-in rounded-2xl border border-brand-green bg-brand-green-pale p-8 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-green">
+          <Check size={30} className="text-white" strokeWidth={3} />
+        </div>
+        <p className="mb-2 font-poppins text-xl font-bold text-brand-navy">
           Thanks {fields.name.split(' ')[0]}, we&apos;ll be in touch soon!
         </p>
-        <p className="font-inter text-brand-navy-dark text-sm">
+        <p className="font-inter text-sm text-brand-navy-dark">
           We typically respond within a few hours. You can also reach us at <strong>915-979-5151</strong>.
         </p>
       </div>
@@ -181,10 +185,10 @@ export default function ContactForm() {
         <label className={labelClass}>Type of Cleaning *</label>
         <div className="flex gap-3">
           <ToggleButton value="residential" current={fields.type} onClick={setToggle('type')}>
-            🏠 Residential
+            <Home size={16} /> Residential
           </ToggleButton>
           <ToggleButton value="commercial" current={fields.type} onClick={setToggle('type')}>
-            🏢 Commercial
+            <Building2 size={16} /> Commercial
           </ToggleButton>
         </div>
         {fieldErrors.type && <p className={errorClass}>{fieldErrors.type}</p>}
@@ -281,7 +285,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold uppercase tracking-wider py-4 rounded-md transition-colors disabled:opacity-50 text-sm"
+        className="press w-full rounded-lg bg-brand-green py-4 font-poppins text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark disabled:opacity-50"
       >
         {status === 'loading' ? 'Sending…' : 'Send Message'}
       </button>

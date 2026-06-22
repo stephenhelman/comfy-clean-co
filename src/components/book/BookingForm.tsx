@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Check } from "lucide-react";
 
 interface BookingFormProps {
   t: {
@@ -26,7 +27,7 @@ interface BookingFormProps {
 }
 
 const inputClass =
-  "w-full bg-white border border-gray-300 text-brand-navy-dark placeholder:text-gray-400 rounded-md px-4 py-3 font-inter text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none transition-colors";
+  "w-full bg-white border border-gray-300 text-brand-navy-dark placeholder:text-gray-500 rounded-lg px-4 py-3 font-inter text-sm focus:border-brand-green focus:ring-2 focus:ring-brand-green/30 focus:outline-none transition-colors";
 
 const labelClass = "block font-poppins font-bold text-xs uppercase tracking-wider text-brand-navy mb-2";
 
@@ -111,9 +112,11 @@ export default function BookingForm({ t }: BookingFormProps) {
 
   if (status === "success") {
     return (
-      <div className="bg-brand-green-pale border border-brand-green rounded-xl p-8 text-center">
-        <div className="text-brand-green text-5xl mb-4">✓</div>
-        <p className="font-poppins font-bold text-xl text-brand-navy mb-2">{t.success}</p>
+      <div className="animate-pop-in rounded-2xl border border-brand-green bg-brand-green-pale p-8 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-green">
+          <Check size={30} className="text-white" strokeWidth={3} />
+        </div>
+        <p className="font-poppins text-xl font-bold text-brand-navy">{t.success}</p>
       </div>
     );
   }
@@ -297,7 +300,8 @@ export default function BookingForm({ t }: BookingFormProps) {
               key={lang}
               type="button"
               onClick={() => setLangPref(lang)}
-              className={`px-4 py-2 rounded-md font-poppins font-bold text-xs uppercase tracking-wider transition-colors ${
+              aria-pressed={langPref === lang}
+              className={`press rounded-lg px-4 py-2 font-poppins text-xs font-bold uppercase tracking-wider transition-colors ${
                 langPref === lang
                   ? "bg-brand-green text-white"
                   : "border border-gray-300 text-brand-navy hover:border-brand-green"
@@ -318,7 +322,7 @@ export default function BookingForm({ t }: BookingFormProps) {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold uppercase tracking-wider py-4 rounded-md transition-colors disabled:opacity-50 text-sm"
+        className="press w-full rounded-lg bg-brand-green py-4 font-poppins text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark disabled:opacity-50"
       >
         {status === "loading" ? "..." : t.submit}
       </button>

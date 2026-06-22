@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
+import Reveal from "@/components/ui/Reveal";
+import WaveDivider from "@/components/ui/WaveDivider";
 
 interface HeroProps {
   locale: string;
@@ -13,6 +17,9 @@ interface HeroProps {
 }
 
 const PREFILL_KEY = "comfy_quote_prefill";
+
+const quoteFieldClass =
+  "bg-white border border-gray-300 text-brand-navy-dark placeholder-gray-500 rounded-lg px-4 py-3 text-sm focus:border-brand-green focus:ring-2 focus:ring-brand-green/30 focus:outline-none transition-colors";
 
 export default function Hero({
   locale,
@@ -34,104 +41,110 @@ export default function Hero({
 
   return (
     <>
-      <section className="relative min-h-[90vh] flex items-stretch overflow-hidden bg-white">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-10 py-16 lg:py-0">
+      <section className="relative flex items-stretch overflow-hidden bg-white lg:min-h-[88vh]">
+        {/* Soft brand wash behind the composition */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_85%_15%,rgba(81,167,85,0.07),transparent_60%)]"
+        />
+
+        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-10 px-4 py-16 sm:px-6 lg:flex-row lg:gap-14 lg:px-8 lg:py-0">
           {/* Left — photo */}
-          <div className="w-full lg:w-1/2 h-64 sm:h-96 lg:h-[600px] rounded-2xl overflow-hidden flex-shrink-0 shadow-lg">
-            <img
+          <div className="relative h-72 w-full shrink-0 overflow-hidden rounded-3xl bg-brand-green-pale shadow-xl shadow-brand-navy/10 sm:h-96 lg:h-[600px] lg:w-1/2">
+            <Image
               src="/images/hero-cleaning.jpg"
-              alt="Professional cleaning team"
-              className="w-full h-full object-center"
-              onError={(e) => {
-                const el = e.currentTarget as HTMLImageElement;
-                el.style.display = "none";
-                (el.parentElement as HTMLElement).style.background = "#E8F5E9";
-              }}
+              alt="Comfy Clean Co. cleaning team ready for a home visit"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-[center_30%]"
             />
           </div>
 
           {/* Right — copy + inline quote form */}
-          <div className="w-full lg:w-1/2 flex flex-col items-start">
-            <p className="font-poppins font-bold text-xs uppercase tracking-widest text-brand-green mb-4">
-              Clean · Fresh · Reliable
-            </p>
+          <div className="flex w-full flex-col items-start lg:w-1/2">
+            <Reveal>
+              <p className="mb-4 font-poppins text-xs font-bold uppercase tracking-[0.18em] text-brand-green-dark">
+                Clean · Fresh · Reliable
+              </p>
+            </Reveal>
 
-            <h1 className="font-poppins font-extrabold text-4xl sm:text-5xl lg:text-6xl text-brand-navy leading-tight mb-4">
-              {headline}
-            </h1>
+            <Reveal delay={70}>
+              <h1 className="text-display mb-5 font-poppins font-extrabold text-brand-navy">
+                {headline}
+              </h1>
+            </Reveal>
 
-            <p className="font-inter text-lg text-brand-navy-dark max-w-xl mb-8 leading-relaxed">
-              {subheadline}
-            </p>
+            <Reveal delay={130}>
+              <p className="mb-8 max-w-xl font-inter text-lg leading-relaxed text-brand-navy-dark/90">
+                {subheadline}
+              </p>
+            </Reveal>
 
             {/* Inline quick-quote form */}
-            <form
-              className="w-full bg-white border border-gray-200 rounded-xl p-6 shadow-md flex flex-col gap-4"
-              onSubmit={handleSubmit}
-            >
-              <p className="font-poppins font-bold text-brand-navy text-lg">
-                Get Your Free Quote
-              </p>
-              <input
-                type="text"
-                placeholder="Your Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="bg-white border border-gray-300 text-brand-navy-dark placeholder-gray-400 rounded-md px-4 py-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="bg-white border border-gray-300 text-brand-navy-dark placeholder-gray-400 rounded-md px-4 py-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none"
-              />
-              <select
-                value={service}
-                onChange={(e) => setService(e.target.value)}
-                className="bg-white border border-gray-300 text-brand-navy-dark rounded-md px-4 py-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none"
+            <Reveal delay={190} className="w-full">
+              <form
+                className="flex w-full flex-col gap-4 rounded-2xl border border-gray-200 bg-white/90 p-6 shadow-lg shadow-brand-navy/5 backdrop-blur-sm"
+                onSubmit={handleSubmit}
               >
-                <option value="" disabled>
-                  Service Needed
-                </option>
-                <option>Residential Cleaning</option>
-                <option>Commercial Cleaning</option>
-                <option>Deep Clean</option>
-                <option>Move-in / Move-out</option>
-                <option>Recurring Service</option>
-              </select>
-              <button
-                type="submit"
-                className="bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold uppercase tracking-wider rounded-md px-6 py-3 text-sm transition-colors"
-              >
-                {ctaPrimary}
-              </button>
-            </form>
+                <p className="font-poppins text-lg font-bold text-brand-navy">
+                  Get Your Free Quote
+                </p>
+                <input
+                  type="text"
+                  placeholder="Your Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={quoteFieldClass}
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className={quoteFieldClass}
+                />
+                <select
+                  value={service}
+                  onChange={(e) => setService(e.target.value)}
+                  className={`${quoteFieldClass} ${service ? "text-brand-navy-dark" : "text-gray-500"}`}
+                >
+                  <option value="" disabled>
+                    Service Needed
+                  </option>
+                  <option>Residential Cleaning</option>
+                  <option>Commercial Cleaning</option>
+                  <option>Deep Clean</option>
+                  <option>Move-in / Move-out</option>
+                  <option>Recurring Service</option>
+                </select>
+                <button
+                  type="submit"
+                  className="press inline-flex items-center justify-center gap-2 rounded-lg bg-brand-green px-6 py-3 font-poppins text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark"
+                >
+                  {ctaPrimary}
+                </button>
+              </form>
+            </Reveal>
 
-            <Link
-              href={`/${locale}/services`}
-              className="mt-4 font-poppins font-bold text-sm uppercase tracking-wider text-brand-navy border-b-2 border-brand-navy hover:text-brand-green hover:border-brand-green transition-colors"
-            >
-              {ctaSecondary} →
-            </Link>
+            <Reveal delay={250}>
+              <Link
+                href={`/${locale}/services`}
+                className="group mt-5 inline-flex items-center gap-1.5 border-b-2 border-brand-navy/70 pb-0.5 font-poppins text-sm font-bold uppercase tracking-wider text-brand-navy transition-colors hover:border-brand-green hover:text-brand-green"
+              >
+                {ctaSecondary}
+                <ArrowRight
+                  size={15}
+                  className="transition-transform duration-200 ease-out-quart group-hover:translate-x-0.5"
+                />
+              </Link>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* Green wave divider */}
-      <div className="w-full overflow-hidden leading-none -mt-1">
-        <svg
-          viewBox="0 0 1440 60"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-          className="w-full h-12 sm:h-16"
-        >
-          <path
-            d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z"
-            fill="#51A755"
-          />
-        </svg>
-      </div>
+      {/* Wave motif — bridges the white hero into the green WhyUs band */}
+      <WaveDivider fill="var(--color-brand-green)" className="-mt-px" />
     </>
   );
 }

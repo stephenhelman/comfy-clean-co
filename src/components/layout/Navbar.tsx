@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X, Phone } from "lucide-react";
+import BrandLogo from "@/components/ui/BrandLogo";
 
 interface NavbarProps {
   locale: string;
@@ -30,27 +31,20 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-brand-navy shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-navy/95 shadow-md backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href={`/${locale}`} className="flex items-center gap-2">
-            <img
-              src="/images/brand/logo-white.png"
-              alt="Comfy Clean Co."
-              className="h-9 w-auto"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-            />
+            <BrandLogo heightClass="h-9" textClass="text-base sm:text-lg" />
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden items-center gap-6 md:flex">
             {/* Phone */}
             <a
               href="tel:+19159795151"
-              className="flex items-center gap-1.5 font-poppins font-bold text-white text-sm hover:text-brand-green-light transition-colors"
+              className="flex items-center gap-1.5 font-poppins text-sm font-bold text-white transition-colors hover:text-brand-green-light"
             >
               <Phone size={15} />
               (915) 979-5151
@@ -60,7 +54,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="font-inter text-sm text-white/80 hover:text-white transition-colors"
+                className="font-inter text-sm text-white/80 transition-colors hover:text-white"
               >
                 {link.label}
               </Link>
@@ -69,7 +63,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
             {/* Language toggle */}
             <Link
               href={otherLocalePath}
-              className="font-poppins font-bold text-xs uppercase tracking-wider text-white/60 hover:text-white transition-colors"
+              className="font-poppins text-xs font-bold uppercase tracking-wider text-white/60 transition-colors hover:text-white"
             >
               {otherLocale === "en" ? "EN" : "ES"}
             </Link>
@@ -77,7 +71,7 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
             {/* Book CTA */}
             <Link
               href={`/${locale}/book`}
-              className="bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold text-sm uppercase tracking-wider px-4 py-2 rounded-md transition-colors"
+              className="press rounded-lg bg-brand-green px-4 py-2 font-poppins text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark"
             >
               {navLabels.book}
             </Link>
@@ -85,21 +79,37 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden text-white p-2"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            className="relative p-2 text-white md:hidden"
+            onClick={() => setMobileOpen((o) => !o)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            <Menu
+              size={24}
+              className={`transition-all duration-200 ease-out-quart ${mobileOpen ? "rotate-90 opacity-0" : "rotate-0 opacity-100"}`}
+            />
+            <X
+              size={24}
+              className={`absolute inset-0 m-auto transition-all duration-200 ease-out-quart ${mobileOpen ? "rotate-0 opacity-100" : "-rotate-90 opacity-0"}`}
+            />
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden bg-brand-navy-dark border-t border-white/10 px-4 py-4 flex flex-col gap-4">
+      {/* Mobile menu — animated dropdown (transform + opacity, no layout jank) */}
+      <div
+        id="mobile-menu"
+        className={`origin-top overflow-hidden border-t border-white/10 bg-brand-navy-dark transition-[opacity,transform] duration-200 ease-out-quart md:hidden ${
+          mobileOpen
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-2 opacity-0"
+        }`}
+        aria-hidden={!mobileOpen}
+      >
+        <div className="flex flex-col gap-4 px-4 py-4">
           <a
             href="tel:+19159795151"
-            className="flex items-center gap-2 font-poppins font-bold text-brand-green text-sm"
+            className="flex items-center gap-2 font-poppins text-sm font-bold text-brand-green-light"
           >
             <Phone size={15} />
             (915) 979-5151
@@ -108,30 +118,30 @@ export default function Navbar({ locale, navLabels }: NavbarProps) {
             <Link
               key={link.href}
               href={link.href}
-              className="font-inter text-white/80 hover:text-white transition-colors"
+              className="font-inter text-white/80 transition-colors hover:text-white"
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
             </Link>
           ))}
-          <div className="flex items-center gap-4 pt-2 border-t border-white/10">
+          <div className="flex items-center gap-4 border-t border-white/10 pt-2">
             <Link
               href={otherLocalePath}
-              className="font-poppins font-bold text-xs uppercase tracking-wider text-white/60"
+              className="font-poppins text-xs font-bold uppercase tracking-wider text-white/60"
               onClick={() => setMobileOpen(false)}
             >
               {otherLocale === "en" ? "EN" : "ES"}
             </Link>
             <Link
               href={`/${locale}/book`}
-              className="flex-1 text-center bg-brand-green hover:bg-brand-green-dark text-white font-poppins font-bold text-sm uppercase tracking-wider px-4 py-2 rounded-md transition-colors"
+              className="press flex-1 rounded-lg bg-brand-green px-4 py-2 text-center font-poppins text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark"
               onClick={() => setMobileOpen(false)}
             >
               {navLabels.book}
             </Link>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }
