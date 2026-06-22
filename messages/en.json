@@ -39,11 +39,6 @@
     "headline": "Serving Far East El Paso",
     "desc": "We proudly serve Far East El Paso including Horizon City, Socorro, and surrounding communities."
   },
-  "cta": {
-    "headline": "Ready for a Cleaner Space?",
-    "desc": "Book your free visit today. No obligation, no pressure — just a clean home.",
-    "button": "Book a Free Visit →"
-  },
   "book": {
     "label": "GET STARTED",
     "headline": "Request Your Free Visit",
@@ -97,8 +92,7 @@
     "phone_label": "Phone",
     "email_label": "Email",
     "location_label": "Service Area",
-    "location_value": "Far East El Paso, Horizon City, Socorro, TX",
-    "cta": "Book a Free Visit →"
+    "location_value": "Far East El Paso, Horizon City, Socorro, TX"
   },
   "footer": {
     "tagline": "Clean · Fresh · Reliable",
