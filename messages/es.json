@@ -39,11 +39,6 @@
     "headline": "Sirviendo el Este de El Paso",
     "desc": "Servimos con orgullo el Este de El Paso, incluyendo Horizon City, Socorro y comunidades cercanas."
   },
-  "cta": {
-    "headline": "¿Listo para un Espacio más Limpio?",
-    "desc": "Reserva tu visita gratuita hoy. Sin compromiso, sin presión — solo un hogar limpio.",
-    "button": "Reserva una Visita Gratis →"
-  },
   "book": {
     "label": "COMENZAR",
     "headline": "Solicita tu Visita Gratuita",
@@ -97,8 +92,7 @@
     "phone_label": "Teléfono",
     "email_label": "Correo",
     "location_label": "Área de Servicio",
-    "location_value": "Este de El Paso, Horizon City, Socorro, TX",
-    "cta": "Reserva una Visita Gratis →"
+    "location_value": "Este de El Paso, Horizon City, Socorro, TX"
   },
   "footer": {
     "tagline": "Clean · Fresh · Reliable",

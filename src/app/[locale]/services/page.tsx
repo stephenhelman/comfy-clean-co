@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { getMessages } from "next-intl/server";
 import SectionLabel from "@/components/ui/SectionLabel";
 import ServiceCard from "@/components/services/ServiceCard";
-import BookingForm from "@/components/book/BookingForm";
+import Reveal from "@/components/ui/Reveal";
+import BookingBand from "@/components/book/BookingBand";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -45,34 +46,27 @@ export default async function ServicesPage({ params }: PageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-white py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionLabel text={(t.label as string) ?? "WHAT WE OFFER"} />
-        <h1 className="font-poppins font-bold text-5xl text-brand-navy mb-4">
-          {(t.headline as string) ?? "Our Cleaning Services"}
-        </h1>
-        <p className="font-inter text-brand-navy-dark text-lg max-w-2xl mb-12">
-          Professional residential and commercial cleaning tailored to your needs. Every service includes our reliability guarantee — we show up on time or your next visit is free.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          {items.map((item, i) => (
-            <ServiceCard key={i} {...item} />
-          ))}
-        </div>
-      </div>
-      <div className="bg-brand-gray-light py-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionLabel text={(book.label as string) ?? "GET STARTED"} />
-          <h2 className="font-poppins font-bold text-4xl text-brand-navy mb-4">
-            {(book.headline as string) ?? "Request Your Free Visit"}
-          </h2>
-          <p className="font-inter text-brand-navy-dark text-lg mb-10">
-            Fill out the form below and we&apos;ll call you within 24 hours to confirm.
+    <div className="min-h-screen bg-white">
+      <div className="section-py">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionLabel text={(t.label as string) ?? "WHAT WE OFFER"} />
+          <h1 className="text-display mb-4 font-poppins font-bold text-brand-navy">
+            {(t.headline as string) ?? "Our Cleaning Services"}
+          </h1>
+          <p className="mb-12 max-w-2xl font-inter text-lg leading-relaxed text-brand-navy-dark/90">
+            Professional residential and commercial cleaning tailored to your needs. Every service includes our reliability guarantee — we show up on time or your next visit is free.
           </p>
-          <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm">
-            <BookingForm t={book as Parameters<typeof BookingForm>[0]["t"]} />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {items.map((item, i) => (
+              <Reveal key={i} delay={i * 80} className="h-full">
+                <ServiceCard {...item} />
+              </Reveal>
+            ))}
           </div>
         </div>
+      </div>
+      <div className="section-py bg-brand-gray-light">
+        <BookingBand t={book as Parameters<typeof BookingBand>[0]["t"]} />
       </div>
     </div>
   );

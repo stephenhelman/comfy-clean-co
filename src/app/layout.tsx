@@ -20,25 +20,18 @@ export const metadata: Metadata = {
     "move out cleaning",
     "commercial cleaning",
   ],
+  // og:image / twitter:image are supplied by the file-based dynamic generator
+  // at src/app/opengraph-image.tsx (no broken static override).
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: "Comfy Clean Co",
     url: "https://comfycleanco.com",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Comfy Clean Co - Professional Cleaning Services in El Paso, TX",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Comfy Clean Co | Professional Cleaning Services in El Paso, TX",
     description,
-    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,

@@ -3,13 +3,25 @@ interface SectionLabelProps {
   light?: boolean;
 }
 
+/**
+ * The brand kicker — a single, deliberate section-label system (green dot +
+ * label + hairline). Used consistently as voice, not as a per-section reflex.
+ */
 export default function SectionLabel({ text, light = false }: SectionLabelProps) {
   return (
-    <div className="flex items-center gap-3 mb-4">
-      <span className={`font-poppins font-bold text-xs uppercase tracking-widest whitespace-nowrap ${light ? "text-white/80" : "text-brand-green"}`}>
+    <div className="mb-5 flex items-center gap-3">
+      <span
+        className={`h-1.5 w-1.5 shrink-0 rounded-full ${light ? "bg-white" : "bg-brand-green"}`}
+        aria-hidden="true"
+      />
+      <span
+        className={`whitespace-nowrap font-poppins text-xs font-bold uppercase tracking-[0.18em] ${
+          light ? "text-white" : "text-brand-green-dark"
+        }`}
+      >
         {text}
       </span>
-      <div className={`h-px flex-1 ${light ? "bg-white/30" : "bg-brand-green/30"}`} />
+      <div className={`h-px flex-1 ${light ? "bg-white/30" : "bg-brand-green/25"}`} />
     </div>
   );
 }

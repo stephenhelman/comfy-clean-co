@@ -1,7 +1,6 @@
-"use client";
-
 import { MapPin, Clock, Building2, MessageCircle } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
+import Reveal from "@/components/ui/Reveal";
 
 interface WhyUsProps {
   t: {
@@ -29,30 +28,26 @@ export default function WhyUs({ t }: WhyUsProps) {
   ];
 
   return (
-    <section className="py-24 bg-brand-green">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="section-py bg-brand-green">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionLabel text={t.label} light />
-        <h2 className="font-poppins font-bold text-4xl sm:text-5xl text-white mb-12">
+        <h2 className="text-section mb-12 max-w-2xl font-poppins font-bold text-white">
           {t.headline}
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Boxless feature grid — deliberately distinct from the elevated Services cards */}
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((card, i) => {
             const Icon = icons[i];
             return (
-              <div
-                key={i}
-                className="bg-white/15 border border-white/25 rounded-xl p-6 hover:bg-white/20 transition-colors duration-200"
-              >
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-4">
-                  <Icon size={24} className="text-white" />
+              <Reveal key={i} delay={i * 70}>
+                <div className="flex flex-col">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
+                    <Icon size={26} className="text-white" strokeWidth={2} />
+                  </div>
+                  <h3 className="mb-2 font-poppins text-lg font-bold text-white">{card.title}</h3>
+                  <p className="font-inter text-sm leading-relaxed text-white/85">{card.desc}</p>
                 </div>
-                <h3 className="font-poppins font-bold text-lg text-white mb-2">
-                  {card.title}
-                </h3>
-                <p className="font-inter text-sm text-white/85 leading-relaxed">
-                  {card.desc}
-                </p>
-              </div>
+              </Reveal>
             );
           })}
         </div>
