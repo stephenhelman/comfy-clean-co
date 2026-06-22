@@ -10,7 +10,7 @@ export default function OGImage() {
     (
       <div
         style={{
-          background: "#1a2744",
+          background: "linear-gradient(135deg, #2B5C78 0%, #1A3A4A 100%)",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -22,9 +22,9 @@ export default function OGImage() {
       >
         <div
           style={{
-            fontSize: 80,
-            fontWeight: 700,
-            color: "#5BB8E8",
+            fontSize: 84,
+            fontWeight: 800,
+            color: "#ffffff",
             letterSpacing: "-2px",
             lineHeight: 1.1,
             textAlign: "center",
@@ -32,13 +32,23 @@ export default function OGImage() {
         >
           Comfy Clean Co
         </div>
+        {/* Brand green underline accent */}
+        <div
+          style={{
+            width: 120,
+            height: 6,
+            borderRadius: 3,
+            background: "#51A755",
+            marginTop: 28,
+          }}
+        />
         <div
           style={{
             fontSize: 36,
             color: "#ffffff",
             marginTop: 28,
             textAlign: "center",
-            opacity: 0.9,
+            opacity: 0.92,
           }}
         >
           Professional Cleaning Services in El Paso, TX
@@ -46,10 +56,10 @@ export default function OGImage() {
         <div
           style={{
             fontSize: 24,
-            color: "#5BB8E8",
+            color: "#6DC272",
             marginTop: 16,
             textAlign: "center",
-            opacity: 0.75,
+            fontWeight: 600,
           }}
         >
           Far East El Paso · Residential &amp; Commercial
