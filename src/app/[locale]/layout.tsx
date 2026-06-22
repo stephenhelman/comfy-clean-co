@@ -1,11 +1,30 @@
 import { notFound } from "next/navigation";
 import { getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import { Poppins, Inter } from "next/font/google";
 import "@/app/globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-poppins-sans",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-inter-sans",
+  display: "swap",
+});
+
 const locales = ["en", "es"];
+
+// Adds `.js` to <html> before paint so scroll-reveal hidden states only apply
+// when JS is present (no-JS / pre-hydration renders stay visible).
+const jsClassScript = `document.documentElement.classList.add('js')`;
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,7 +42,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
   const footer = (messages as Record<string, Record<string, string>>).footer ?? {};
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${poppins.variable} ${inter.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: jsClassScript }} />
+      </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Navbar
