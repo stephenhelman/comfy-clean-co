@@ -10,7 +10,7 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, "1 h"),
 });
 
-const REQUIRED: (keyof LeadSubmission)[] = ["name", "phone", "email", "address", "division", "service"];
+const REQUIRED: (keyof LeadSubmission)[] = ["name", "phone", "email", "division", "service"];
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -47,9 +47,10 @@ export async function POST(req: NextRequest) {
       name: body.name,
       phone: body.phone,
       email: body.email,
-      address: body.address,
       division: body.division,
       service: body.service,
+      preferredDate: body.preferredDate || undefined,
+      preferredTime: body.preferredTime || undefined,
       notes: body.notes || undefined,
       lang: body.lang === "es" ? "es" : "en",
       source: typeof body.source === "string" && body.source ? body.source : "book",

@@ -18,6 +18,14 @@ export async function sendCustomerConfirmation(data: LeadSubmission): Promise<vo
   const isSpanish = data.lang === "es";
   const serviceLabel = prettifyService(data.service);
 
+  const row = (label: string, value: string) =>
+    `<p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">${label}:</strong> ${value}</p>`;
+  const detailRows = [
+    row(isSpanish ? "Servicio" : "Service", serviceLabel),
+    data.preferredDate ? row(isSpanish ? "Fecha Preferida" : "Preferred Date", data.preferredDate) : "",
+    data.preferredTime ? row(isSpanish ? "Hora Preferida" : "Preferred Time", data.preferredTime) : "",
+  ].join("");
+
   const subject = isSpanish
     ? "Recibimos tu solicitud de servicio — Comfy Clean Co"
     : "Your booking request was received — Comfy Clean Co";
@@ -39,8 +47,7 @@ export async function sendCustomerConfirmation(data: LeadSubmission): Promise<vo
       </p>
       <div style="background:#111111;border-left:3px solid #5BB8E8;padding:20px;margin:24px 0;border-radius:4px;">
         <h3 style="color:#5BB8E8;margin-top:0;font-size:14px;text-transform:uppercase;letter-spacing:2px;">Tu Solicitud</h3>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Servicio:</strong> ${serviceLabel}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Dirección:</strong> ${data.address}</p>
+        ${detailRows}
       </div>
       <p style="color:#D1D5DB;font-size:16px;">¿Tienes preguntas? Llámanos directamente:</p>
       <p style="color:#5BB8E8;font-size:18px;font-weight:bold;">[PLACEHOLDER — cliente debe proporcionar]</p>
@@ -67,8 +74,7 @@ export async function sendCustomerConfirmation(data: LeadSubmission): Promise<vo
       </p>
       <div style="background:#111111;border-left:3px solid #5BB8E8;padding:20px;margin:24px 0;border-radius:4px;">
         <h3 style="color:#5BB8E8;margin-top:0;font-size:14px;text-transform:uppercase;letter-spacing:2px;">Your Request</h3>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Service:</strong> ${serviceLabel}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Address:</strong> ${data.address}</p>
+        ${detailRows}
       </div>
       <p style="color:#D1D5DB;font-size:16px;">Have questions? Call us directly:</p>
       <p style="color:#5BB8E8;font-size:18px;font-weight:bold;">915-979-5151</p>
@@ -105,9 +111,9 @@ Timestamp:    ${new Date().toISOString()}
 Name:         ${data.name}
 Phone:        ${data.phone}
 Email:        ${data.email}
-Address:      ${data.address}
 Division:     ${data.division}
 Service:      ${data.service}
+Preferred:    ${[data.preferredDate, data.preferredTime].filter(Boolean).join(" ") || "(no preference)"}
 Language:     ${data.lang}
 Source:       ${data.source}
 Notes:        ${data.notes || "(none)"}

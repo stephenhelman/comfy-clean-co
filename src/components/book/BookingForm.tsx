@@ -15,18 +15,21 @@ export interface BookingFormProps {
     name: string;
     phone: string;
     email: string;
-    address: string;
     notes: string;
     language: string;
     division: string;
     service: string;
     servicePlaceholder: string;
+    preferredDate: string;
+    preferredTime: string;
+    timeNoPreference: string;
+    times: { morning: string; afternoon: string; flexible: string };
     submit: string;
     success: string;
     error: string;
     divisions: { residential: string; commercial: string };
   };
-  /** Lead source tag persisted with the submission. */
+  /** Lead source tag persisted with the submission (placement default). */
   source?: string;
   /** Preset + lock the form to a specific service (service pages). */
   presetService?: string;
@@ -45,9 +48,10 @@ interface Prefill {
   phone?: string;
   service?: string;
   division?: Division;
+  source?: string;
 }
 
-const REQUIRED = ["name", "phone", "email", "address", "division", "service"] as const;
+const REQUIRED = ["name", "phone", "email", "division", "service"] as const;
 
 export default function BookingForm({
   t,
@@ -69,10 +73,13 @@ export default function BookingForm({
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
   const [division, setDivision] = useState<Division>(initialDivision);
   const [service, setService] = useState(presetService ?? "");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
   const [notes, setNotes] = useState("");
+  // A carried source (e.g. "home-hero") set by the hero prefill wins over the placement default.
+  const [carriedSource, setCarriedSource] = useState<string | null>(null);
 
   // Hero quick-quote → localStorage prefill (only when not a locked service page).
   useEffect(() => {
@@ -85,6 +92,7 @@ export default function BookingForm({
       if (p.phone) setPhone(p.phone);
       if (p.division) setDivision(p.division);
       if (p.service && getServiceBySlug(p.service)) setService(p.service);
+      if (p.source) setCarriedSource(p.source);
       localStorage.removeItem(PREFILL_KEY);
     } catch {
       // ignore
@@ -100,7 +108,7 @@ export default function BookingForm({
   }
 
   function validate(): boolean {
-    const values: Record<string, string> = { name, phone, email, address, division, service };
+    const values: Record<string, string> = { name, phone, email, division, service };
     const next: Record<string, boolean> = {};
     let ok = true;
     for (const field of REQUIRED) {
@@ -122,12 +130,13 @@ export default function BookingForm({
       name,
       phone,
       email,
-      address,
       division,
       service,
+      preferredDate: preferredDate || undefined,
+      preferredTime: preferredTime || undefined,
       notes: notes || undefined,
       lang,
-      source,
+      source: carriedSource ?? source,
       website: (e.currentTarget.elements.namedItem("website") as HTMLInputElement)?.value ?? "",
     };
 
@@ -181,15 +190,10 @@ export default function BookingForm({
           <input id="phone" name="phone" type="tel" placeholder={t.phone} value={phone}
             onChange={(e) => setPhone(e.target.value)} className={`${inputClass} ${errBorder("phone")}`} />
         </div>
-        <div>
+        <div className="sm:col-span-2">
           <label htmlFor="email" className={labelClass}>{t.email} *</label>
           <input id="email" name="email" type="email" placeholder={t.email} value={email}
             onChange={(e) => setEmail(e.target.value)} className={`${inputClass} ${errBorder("email")}`} />
-        </div>
-        <div>
-          <label htmlFor="address" className={labelClass}>{t.address} *</label>
-          <input id="address" name="address" type="text" placeholder={t.address} value={address}
-            onChange={(e) => setAddress(e.target.value)} className={`${inputClass} ${errBorder("address")}`} />
         </div>
       </div>
 
@@ -243,6 +247,27 @@ export default function BookingForm({
             ))}
           </select>
         )}
+      </div>
+
+      {/* Preferred date + time (optional) */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div>
+          <label htmlFor="preferredDate" className={labelClass}>{t.preferredDate}</label>
+          <input id="preferredDate" name="preferredDate" type="date" value={preferredDate}
+            onChange={(e) => setPreferredDate(e.target.value)}
+            className={`${inputClass} ${preferredDate ? "text-brand-navy-dark" : "text-gray-500"}`} />
+        </div>
+        <div>
+          <label htmlFor="preferredTime" className={labelClass}>{t.preferredTime}</label>
+          <select id="preferredTime" name="preferredTime" value={preferredTime}
+            onChange={(e) => setPreferredTime(e.target.value)}
+            className={`${inputClass} ${preferredTime ? "text-brand-navy-dark" : "text-gray-500"}`}>
+            <option value="">{t.timeNoPreference}</option>
+            <option value={t.times.morning}>{t.times.morning}</option>
+            <option value={t.times.afternoon}>{t.times.afternoon}</option>
+            <option value={t.times.flexible}>{t.times.flexible}</option>
+          </select>
+        </div>
       </div>
 
       <div>

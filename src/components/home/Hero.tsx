@@ -40,9 +40,10 @@ export default function Hero({
   function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     // Prefill the /book form from the manifest source of truth (residential default).
+    // Carry the source so the eventual submission records "home-hero", not "book".
     localStorage.setItem(
       PREFILL_KEY,
-      JSON.stringify({ name, phone, service, division: "residential" })
+      JSON.stringify({ name, phone, service, division: "residential", source: "home-hero" })
     );
     router.push(`/${locale}/book`);
   }
