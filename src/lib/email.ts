@@ -1,13 +1,22 @@
-import { BookingData } from "./services";
+import type { LeadSubmission } from "./leadSink";
 
-export async function sendCustomerConfirmation(data: BookingData): Promise<void> {
+/** "deep-clean" -> "Deep Clean" (functional label until proper i18n in the email). */
+function prettifyService(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+export async function sendCustomerConfirmation(data: LeadSubmission): Promise<void> {
   if (!process.env.RESEND_API_KEY) return;
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://comfycleanco.com";
   const fromEmail = process.env.EMAIL_NOREPLY ?? "noreply@comfycleanco.com";
-  const isSpanish = data.languagePreference === "Español";
+  const isSpanish = data.lang === "es";
+  const serviceLabel = prettifyService(data.service);
 
   const subject = isSpanish
     ? "Recibimos tu solicitud de servicio — Comfy Clean Co"
@@ -30,11 +39,8 @@ export async function sendCustomerConfirmation(data: BookingData): Promise<void>
       </p>
       <div style="background:#111111;border-left:3px solid #5BB8E8;padding:20px;margin:24px 0;border-radius:4px;">
         <h3 style="color:#5BB8E8;margin-top:0;font-size:14px;text-transform:uppercase;letter-spacing:2px;">Tu Solicitud</h3>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Servicio:</strong> ${data.serviceType}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Frecuencia:</strong> ${data.frequency}</p>
+        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Servicio:</strong> ${serviceLabel}</p>
         <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Dirección:</strong> ${data.address}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Fecha Preferida:</strong> ${data.preferredDate}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Hora Preferida:</strong> ${data.preferredTime}</p>
       </div>
       <p style="color:#D1D5DB;font-size:16px;">¿Tienes preguntas? Llámanos directamente:</p>
       <p style="color:#5BB8E8;font-size:18px;font-weight:bold;">[PLACEHOLDER — cliente debe proporcionar]</p>
@@ -61,11 +67,8 @@ export async function sendCustomerConfirmation(data: BookingData): Promise<void>
       </p>
       <div style="background:#111111;border-left:3px solid #5BB8E8;padding:20px;margin:24px 0;border-radius:4px;">
         <h3 style="color:#5BB8E8;margin-top:0;font-size:14px;text-transform:uppercase;letter-spacing:2px;">Your Request</h3>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Service:</strong> ${data.serviceType}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Frequency:</strong> ${data.frequency}</p>
+        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Service:</strong> ${serviceLabel}</p>
         <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Address:</strong> ${data.address}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Preferred Date:</strong> ${data.preferredDate}</p>
-        <p style="color:#C0C0C0;margin:4px 0;"><strong style="color:#FFFFFF;">Preferred Time:</strong> ${data.preferredTime}</p>
       </div>
       <p style="color:#D1D5DB;font-size:16px;">Have questions? Call us directly:</p>
       <p style="color:#5BB8E8;font-size:18px;font-weight:bold;">915-979-5151</p>
@@ -85,7 +88,7 @@ export async function sendCustomerConfirmation(data: BookingData): Promise<void>
   });
 }
 
-export async function sendBusinessNotification(data: BookingData): Promise<void> {
+export async function sendBusinessNotification(data: LeadSubmission): Promise<void> {
   if (!process.env.RESEND_API_KEY) return;
 
   const { Resend } = await import("resend");
@@ -93,7 +96,7 @@ export async function sendBusinessNotification(data: BookingData): Promise<void>
   const businessEmail = process.env.EMAIL_SCHEDULING ?? "scheduling@comfycleanco.com";
   const fromEmail = process.env.EMAIL_NOREPLY ?? "noreply@comfycleanco.com";
 
-  const subject = `New Booking Request — ${data.name} — ${data.serviceType}`;
+  const subject = `New Booking Request — ${data.name} — ${prettifyService(data.service)}`;
 
   const body = `
 New Booking Request
@@ -103,12 +106,10 @@ Name:         ${data.name}
 Phone:        ${data.phone}
 Email:        ${data.email}
 Address:      ${data.address}
-Service Type: ${data.serviceType}
-Frequency:    ${data.frequency}
-Home Size:    ${data.homeSize}
-Date:         ${data.preferredDate}
-Time:         ${data.preferredTime}
-Language:     ${data.languagePreference}
+Division:     ${data.division}
+Service:      ${data.service}
+Language:     ${data.lang}
+Source:       ${data.source}
 Notes:        ${data.notes || "(none)"}
 `.trim();
 

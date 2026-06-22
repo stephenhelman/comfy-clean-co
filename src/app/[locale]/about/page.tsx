@@ -44,7 +44,7 @@ export default async function AboutPage({ params }: PageProps) {
         </div>
       </div>
       <div className="section-py bg-brand-gray-light">
-        <BookingBand t={book as Parameters<typeof BookingBand>[0]["t"]} />
+        <BookingBand t={book as Parameters<typeof BookingBand>[0]["t"]} source="about" />
       </div>
     </div>
   );

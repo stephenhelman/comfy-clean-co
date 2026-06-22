@@ -1,44 +1,20 @@
-import { Home, Building2, CalendarCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import SectionLabel from "@/components/ui/SectionLabel";
-import Card from "@/components/ui/Card";
+import ServiceCard from "@/components/services/ServiceCard";
 import Reveal from "@/components/ui/Reveal";
+import { getFeaturedServices } from "@/lib/services";
 
 interface ServicesOverviewProps {
   locale: string;
   t: {
     label: string;
     headline: string;
-    residential_title: string;
-    residential_desc: string;
-    commercial_title: string;
-    commercial_desc: string;
-    recurring_title: string;
-    recurring_desc: string;
   };
 }
 
 export default function ServicesOverview({ locale, t }: ServicesOverviewProps) {
-  const services = [
-    {
-      icon: Home,
-      title: t.residential_title,
-      desc: t.residential_desc,
-      features: ["Deep Clean", "Standard Clean", "Move-in/Move-out"],
-    },
-    {
-      icon: Building2,
-      title: t.commercial_title,
-      desc: t.commercial_desc,
-      features: ["Offices", "Retail Spaces", "Small Commercial"],
-    },
-    {
-      icon: CalendarCheck,
-      title: t.recurring_title,
-      desc: t.recurring_desc,
-      features: ["Weekly", "Bi-weekly", "Monthly"],
-    },
-  ];
+  const featured = getFeaturedServices();
 
   return (
     <section className="section-py bg-white">
@@ -48,9 +24,9 @@ export default function ServicesOverview({ locale, t }: ServicesOverviewProps) {
           {t.headline}
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {services.map((svc, i) => (
-            <Reveal key={i} delay={i * 80} className="h-full">
-              <Card icon={svc.icon} title={svc.title} desc={svc.desc} features={svc.features} />
+          {featured.map((svc, i) => (
+            <Reveal key={svc.slug} delay={i * 80} className="h-full">
+              <ServiceCard service={svc} />
             </Reveal>
           ))}
         </div>

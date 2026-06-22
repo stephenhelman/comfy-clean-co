@@ -4,9 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 import WaveDivider from "@/components/ui/WaveDivider";
+import { getServicesByDivision } from "@/lib/services";
 
 interface HeroProps {
   locale: string;
@@ -29,13 +31,19 @@ export default function Hero({
   ctaSecondary,
 }: HeroProps) {
   const router = useRouter();
+  const items = useTranslations("services.items");
+  const residentialServices = getServicesByDivision("residential");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [service, setService] = useState("");
 
   function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    localStorage.setItem(PREFILL_KEY, JSON.stringify({ name, phone, serviceType: service }));
+    // Prefill the /book form from the manifest source of truth (residential default).
+    localStorage.setItem(
+      PREFILL_KEY,
+      JSON.stringify({ name, phone, service, division: "residential" })
+    );
     router.push(`/${locale}/book`);
   }
 
@@ -113,11 +121,11 @@ export default function Hero({
                   <option value="" disabled>
                     Service Needed
                   </option>
-                  <option>Residential Cleaning</option>
-                  <option>Commercial Cleaning</option>
-                  <option>Deep Clean</option>
-                  <option>Move-in / Move-out</option>
-                  <option>Recurring Service</option>
+                  {residentialServices.map((s) => (
+                    <option key={s.slug} value={s.slug}>
+                      {items(`${s.slug}.title`)}
+                    </option>
+                  ))}
                 </select>
                 <button
                   type="submit"

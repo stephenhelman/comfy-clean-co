@@ -1,22 +1,32 @@
 "use client";
 
-import { Home, Building2, CalendarCheck } from "lucide-react";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import Card from "@/components/ui/Card";
-
-const iconMap = { Home, Building2, CalendarCheck } as const;
-type IconName = keyof typeof iconMap;
-
-interface ServiceCardProps {
-  icon: IconName;
-  title: string;
-  desc: string;
-  features: string[];
-}
+import { serviceIcon } from "./serviceIcon";
+import type { Service } from "@/lib/services";
 
 /**
- * Thin adapter so the server-rendered Services page can reference icons by name
- * and reuse the single canonical Card markup.
+ * The single service card used on the home page and the services tabs.
+ * Manifest-driven: copy comes from `services.items.<slug>.*`, the icon resolves
+ * from the manifest name, and the whole card links to the service's page.
  */
-export default function ServiceCard({ icon, title, desc, features }: ServiceCardProps) {
-  return <Card icon={iconMap[icon]} title={title} desc={desc} features={features} />;
+export default function ServiceCard({ service }: { service: Service }) {
+  const locale = useLocale();
+  const t = useTranslations("services.items");
+  const features = (t.raw(`${service.slug}.features`) as string[] | undefined) ?? [];
+
+  return (
+    <Link
+      href={`/${locale}/services/${service.slug}`}
+      className="block h-full rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green/40"
+    >
+      <Card
+        icon={serviceIcon(service.icon)}
+        title={t(`${service.slug}.title`)}
+        desc={t(`${service.slug}.desc`)}
+        features={features}
+      />
+    </Link>
+  );
 }
