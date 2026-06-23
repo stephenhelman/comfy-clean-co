@@ -100,10 +100,12 @@ export default function Navbar({ locale, phone, navLabels }: NavbarProps) {
         </div>
       </div>
 
-      {/* Mobile menu — animated dropdown (transform + opacity, no layout jank) */}
+      {/* Mobile menu — animated dropdown. Absolutely positioned so the closed
+          state reserves no height (otherwise the header background fills the
+          reserved area and the menu appears permanently open on mobile). */}
       <div
         id="mobile-menu"
-        className={`origin-top overflow-hidden border-t border-white/10 bg-brand-navy-dark transition-[opacity,transform] duration-200 ease-out-quart lg:hidden ${
+        className={`absolute inset-x-0 top-full origin-top overflow-hidden border-t border-white/10 bg-brand-navy-dark shadow-lg shadow-brand-navy/20 transition-[opacity,transform] duration-200 ease-out-quart lg:hidden ${
           mobileOpen
             ? "translate-y-0 opacity-100"
             : "pointer-events-none -translate-y-2 opacity-0"

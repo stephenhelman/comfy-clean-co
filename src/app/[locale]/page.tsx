@@ -5,6 +5,7 @@ import WhyUs from "@/components/home/WhyUs";
 import ServicesOverview from "@/components/home/ServicesOverview";
 import ServiceArea from "@/components/home/ServiceArea";
 import WaveDivider from "@/components/ui/WaveDivider";
+import HomeReviews from "@/components/home/HomeReviews";
 import BookingBand from "@/components/book/BookingBand";
 import { getBusinessPhone } from "@/lib/businessData";
 import { phoneHref } from "@/lib/businessInfo";
@@ -72,8 +73,10 @@ export default async function HomePage({ params }: PageProps) {
         ctaSecondary={(hero.cta_secondary as string) ?? "View Services"}
       />
       <WhyUs t={whyUs as Parameters<typeof WhyUs>[0]["t"]} />
-      {/* Wave motif — green band drips back into the white Services section */}
+      {/* Wave motif — green band drips back into the white section below */}
       <WaveDivider fill="var(--color-brand-green)" flip className="-mt-px" />
+      {/* Social proof — live Google reviews, deep-linked to the Reviews page */}
+      <HomeReviews locale={locale} />
       <ServicesOverview locale={locale} t={services as Parameters<typeof ServicesOverview>[0]["t"]} />
       <ServiceArea t={serviceArea as Parameters<typeof ServiceArea>[0]["t"]} />
       <section className="section-py bg-brand-gray-light">

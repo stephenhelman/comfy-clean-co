@@ -12,6 +12,13 @@ export const SERVICE_AREA_CITIES = ["Far East El Paso", "Horizon City"] as const
 /** Canonical fallback phone when BusinessSettings.businessPhone is unset. */
 export const PHONE_FALLBACK = "(915) 224-2995";
 
+/**
+ * Direct "write a Google review" short link for the business (owner-provided).
+ * Takes the user straight to the review dialog — preferred over the place-id
+ * constructed URL for the "Review us on Google" CTAs.
+ */
+export const GOOGLE_WRITE_REVIEW_URL = "https://g.page/r/CV2EtHr7Oxw8EBM/review";
+
 const BUSINESS_NAME = "Comfy Clean Co";
 const BUSINESS_LOCALITY = "El Paso TX";
 

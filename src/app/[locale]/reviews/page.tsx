@@ -6,7 +6,7 @@ import StarRating from "@/components/reviews/StarRating";
 import GoogleBadge from "@/components/reviews/GoogleBadge";
 import ReviewsCarousel from "@/components/reviews/ReviewsCarousel";
 import { getReviewsData } from "@/lib/businessData";
-import { googleReviewsUrl, googleWriteReviewUrl } from "@/lib/businessInfo";
+import { googleReviewsUrl, GOOGLE_WRITE_REVIEW_URL } from "@/lib/businessInfo";
 import { localeAlternates } from "@/lib/seo";
 
 interface PageProps {
@@ -29,7 +29,7 @@ export default async function ReviewsPage({ params }: PageProps) {
   const { reviews, rating, count, placeId } = await getReviewsData();
 
   const reviewsUrl = googleReviewsUrl(placeId);
-  const writeUrl = googleWriteReviewUrl(placeId);
+  const writeUrl = GOOGLE_WRITE_REVIEW_URL;
   const hasReviews = reviews.length > 0;
 
   return (
